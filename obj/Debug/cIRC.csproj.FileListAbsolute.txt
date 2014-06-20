@@ -1,0 +1,6 @@
+C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\Debug\cIRC.exe.config
+C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\Debug\cIRC.exe
+C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\Debug\cIRC.pdb
+C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\Debug\cIRC.csprojResolveAssemblyReference.cache
+C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\Debug\cIRC.exe
+C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\Debug\cIRC.pdb
