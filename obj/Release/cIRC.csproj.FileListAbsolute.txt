@@ -1,2 +1,0 @@
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\Release\cIRC.exe.config
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\Release\cIRC.exe

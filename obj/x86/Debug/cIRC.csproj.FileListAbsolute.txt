@@ -1,9 +1,0 @@
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\x86\Debug\cIRC.csprojResolveAssemblyReference.cache
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Debug\Newtonsoft.Json.dll
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Debug\Newtonsoft.Json.pdb
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Debug\Newtonsoft.Json.xml
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Debug\FattyBot.exe.config
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Debug\FattyBot.exe
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Debug\FattyBot.pdb
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\x86\Debug\FattyBot.exe
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\x86\Debug\FattyBot.pdb

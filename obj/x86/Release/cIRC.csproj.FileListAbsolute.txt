@@ -1,6 +1,0 @@
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Release\cIRC.exe.config
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Release\cIRC.exe
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Release\Newtonsoft.Json.dll
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Release\Newtonsoft.Json.pdb
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\bin\x86\Release\Newtonsoft.Json.xml
-C:\Users\stoopdapoop\Documents\Visual Studio 2012\Projects\bot\obj\x86\Release\cIRC.exe
