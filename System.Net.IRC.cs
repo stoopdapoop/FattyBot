@@ -121,7 +121,7 @@ namespace System.Net {
 		#endregion
 		
 		#region Public Methods
-		public void Connect(string IrcServer, int IrcPort) {
+		public void Connect(string IrcServer, int IrcPort, string AuthPassword) {
 			this.IrcServer = IrcServer;
 			this.IrcPort = IrcPort;
 
@@ -139,7 +139,7 @@ namespace System.Net {
 			this.IrcWriter.Flush();
 			this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
 			this.IrcWriter.Flush();
-            this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY poopie");
+            this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + AuthPassword);
             this.IrcWriter.Flush();
 			this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
 			this.IrcWriter.Flush();

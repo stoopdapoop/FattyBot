@@ -64,7 +64,7 @@ namespace FattyBot {
             Commands.Add("help", new CommandMethod(Help));
 			
 			// Connect to server
-			IrcObject.Connect(IrcServer, IrcPort);
+			IrcObject.Connect(IrcServer, IrcPort, "poopie");
 		} /* cIRC */
 		
 		private void IrcCommandReceived(string IrcCommand) {
