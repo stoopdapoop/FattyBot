@@ -1,0 +1,17 @@
+Connect aliases to other commands, including seent
+
+-------
+
+create new delegates for channel messages and PM's
+
+tell overflows go to pm
+
+yahoo calc?
+
+serialize tells and aliases
+
+6288K memory
+
+allow to reconnect
+
+github -- remove unecessary stuff
