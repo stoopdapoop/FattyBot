@@ -10,7 +10,7 @@ namespace FattyBot {
         private Dictionary<string, CommandMethod> Commands = new Dictionary<string, CommandMethod>();
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
         private Dictionary<string, List<Tuple<String, DateTime, String>>> TellList = new Dictionary<string, List<Tuple<String, DateTime, String>>>();
-        private delegate void CommandMethod(string caller, string args);
+        private delegate void CommandMethod(string caller, string args, string source);
 		
 		static void Main(string[] args) {
             
@@ -53,6 +53,8 @@ namespace FattyBot {
 			IrcObject.eventNickChange += new NickChange(IrcNickChange);
 			IrcObject.eventKick += new Kick(IrcKick);
 			IrcObject.eventQuit += new Quit(IrcQuit);
+            IrcObject.eventChannelMessage += new ChannelMessage(IrcChannelMessage);
+            IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
 
             Commands.Add("seen", new CommandMethod(Seen));
             Commands.Add("tell", new CommandMethod(Tell));
@@ -66,61 +68,11 @@ namespace FattyBot {
 		} /* cIRC */
 		
 		private void IrcCommandReceived(string IrcCommand) {
-            var parts = IrcCommand.Split(' ');
+           
             
-            if (parts[1] == "PRIVMSG") {
-                string user = parts[0].Substring(1, parts[0].IndexOf('!')-1);
-                string channel = parts[2];
-                string message = parts[3].Substring(1);
-                for (int i = 4; i < parts.Length; ++i)
-                    message += " " + parts[i];
-
-                //Console.ForegroundColor = ConsoleColor.DarkGray;
-                //Console.WriteLine("{0} says \"{1}\" in {2}", user, message, channel);
-                //Console.ResetColor();
-               
-
-                List<Tuple<String, DateTime, string>> waitingTells;
-                bool hasMessagesWaiting = TellList.TryGetValue(user, out waitingTells);
-                if (hasMessagesWaiting)
-                {
-                    foreach (var waitingMessage in waitingTells)
-                    {
-                        string fromUser = waitingMessage.Item1;
-                        DateTime dateSent = waitingMessage.Item2;
-                        string prettyTime = GetPrettyTime(DateTime.Now - dateSent);
-                        string messageSent = waitingMessage.Item3;
-                        SendToChannel(String.Format("{0}:<{1}>{2} - sent {3} ago.", user, fromUser, messageSent, prettyTime));
-                    }
-                    TellList.Remove(user);
-                }
-
-                if (message[0] == CommandSymbol)
-                {
-                    string command = message.Substring(1);
-                    int separatorPosition = command.IndexOf(' ');
-                    string commandName;
-                    string commandArgs;
-                    if (separatorPosition > -1)
-                    {
-                        commandName = command.Substring(0, separatorPosition);
-                        commandArgs = command.Substring(separatorPosition + 1);
-                        
-                    }
-                    else
-                    {
-                        commandName = command;
-                        commandArgs = "";
-                    }
-                                        
-                    RunCommand(user, commandName, commandArgs);
-                }
-                SeenList[user] = new Tuple<DateTime, String>(DateTime.Now, message);
-                
-            }
-            else {
+            {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine(DateTime.Now + IrcCommand);
+                Console.WriteLine(String.Format("{0}: {1}", DateTime.Now.ToShortTimeString(), IrcCommand));
                 Console.ResetColor();
             }
            
@@ -171,23 +123,70 @@ namespace FattyBot {
 			//Console.WriteLine(String.Format("{0} has quit IRC ({1})", UserQuit, QuitMessage));
 		} /* IrcQuit */
 
-        private void RunCommand(string caller,string command, string args)
+        private void IrcChannelMessage(string IrcUser, string Message) {
+            MonitorChat(IrcUser, Message, IrcObject.IrcChannel);
+            SeenList[IrcUser] = new Tuple<DateTime, String>(DateTime.Now, Message);
+        }
+
+        private void IrcPrivateMessage(string IrcUser, string Message) {
+            MonitorChat(IrcUser, Message, IrcUser);
+        }
+
+        private void MonitorChat(string IrcUser, string Message, string MessageSource) {
+            DeliverTells(IrcUser, MessageSource);
+            ExecuteCommands(Message, IrcUser, MessageSource);
+        }
+
+        private void ExecuteCommands(string Message, string IrcUser, string MessageSource) {
+            if (Message[0] == CommandSymbol) {
+                string command = Message.Substring(1);
+                int separatorPosition = command.IndexOf(' ');
+                string commandName;
+                string commandArgs;
+                if (separatorPosition > -1) {
+                    commandName = command.Substring(0, separatorPosition);
+                    commandArgs = command.Substring(separatorPosition + 1);
+                }
+                else {
+                    commandName = command;
+                    commandArgs = "";
+                }
+                RunCommand(IrcUser, MessageSource, commandName, commandArgs);
+            }
+        }
+
+        private void DeliverTells(string IrcUser, string MessageSource) {
+            List<Tuple<String, DateTime, string>> waitingTells;
+            bool hasMessagesWaiting = TellList.TryGetValue(IrcUser, out waitingTells);
+            if (hasMessagesWaiting) {
+                foreach (var waitingMessage in waitingTells) {
+                    string fromUser = waitingMessage.Item1;
+                    DateTime dateSent = waitingMessage.Item2;
+                    string prettyTime = GetPrettyTime(DateTime.Now - dateSent);
+                    string messageSent = waitingMessage.Item3;
+                    SendMessage(MessageSource, String.Format("{0}:<{1}>{2} - sent {3} ago.", IrcUser, fromUser, messageSent, prettyTime));
+                }
+                TellList.Remove(IrcUser);
+            }
+        }
+
+        private void RunCommand(string caller, string source, string command, string args)
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("{0} used command called \"{1}\" with arguments \"{2}\"", caller, command, args);
             CommandMethod meth;
             if (Commands.TryGetValue(command, out meth))
-                meth.Invoke(caller, args);
+                meth.Invoke(caller, args, source);
             else
-                SendToChannel(String.Format("{0} is not a valid command", command));
+                SendMessage(source, String.Format("{0} is not a valid command", command));
             Console.ResetColor();
         }
 
-        private void SendToChannel(string message)
+        private void SendMessage(string sendTo, string message)
         {
             //Encoding enc = new UTF8Encoding(false, false);
 
-            string outputMessage = String.Format("PRIVMSG {0} :{1}", IrcObject.IrcChannel, message);
+            string outputMessage = String.Format("PRIVMSG {0} :{1}", sendTo, message);
             //byte[] rawBytes = enc.GetBytes(outputMessage);
             //char[] rawChars = enc.GetChars(rawBytes);
             //IrcObject.IrcWriter.WriteLine(rawChars);

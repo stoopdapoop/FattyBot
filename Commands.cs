@@ -38,7 +38,7 @@ namespace FattyBot
 
         List<HashSet<String>> AliasList = new List<HashSet<String>>();
 
-        private void Help(String caller, String args)
+        private void Help(string caller, string args, string source)
         {
             StringBuilder availableMethodNames = new StringBuilder();
             foreach (KeyValuePair<string, CommandMethod> mthd in Commands)
@@ -47,10 +47,10 @@ namespace FattyBot
                 availableMethodNames.Append(", ");
             }
             availableMethodNames.Remove(availableMethodNames.Length - 2, 1);
-            SendToChannel(availableMethodNames.ToString());
+            SendMessage(source, availableMethodNames.ToString());
         }
 
-        private void Seen(String caller, String args)
+        private void Seen(string caller, string args, string source)
         {
             Tuple<DateTime, String> lastSeentEntry;
             
@@ -63,25 +63,25 @@ namespace FattyBot
                 string prettyTime = GetPrettyTime(lastSeenSpan);
                 
                 if (caller == args)
-                    SendToChannel(String.Format("You were last seen (before this command) {0} on {1}. {2} ago. \"{3}\"", args, lastSeentTime, prettyTime, lastSeentEntry.Item2));
+                    SendMessage(source, String.Format("You were last seen (before this command) {0} on {1}. {2} ago. \"{3}\"", args, lastSeentTime, prettyTime, lastSeentEntry.Item2));
                 else
-                    SendToChannel(String.Format("Last seen {0} on {1}. {2} ago. \"{3}\"", args, lastSeentTime, prettyTime, lastSeentEntry.Item2));
+                    SendMessage(source, String.Format("Last seen {0} on {1}. {2} ago. \"{3}\"", args, lastSeentTime, prettyTime, lastSeentEntry.Item2));
 
             }
             else
             {
-                SendToChannel(String.Format("Haven't ever seen \"{0}\" around", args));
+                SendMessage(source, String.Format("Haven't ever seen \"{0}\" around", args));
             }
         }
 
-        private void Tell(String caller, String args)
+        private void Tell(string caller, string args, string source)
         {
             var parts = args.Split(' ');
             var recipients = parts[0].Split(',');
             string msg = String.Join(" ", parts, 1, parts.Length-1);
             foreach(var recip in recipients) {
                 if (recip == IrcObject.IrcNick) {
-                    SendToChannel("xD");
+                    SendMessage(source, "xD");
                     continue;
                 }
                 List<Tuple<String, DateTime, String>> thisTell;
@@ -91,10 +91,10 @@ namespace FattyBot
                 else
                     TellList[recip] = new List<Tuple<String, DateTime, string>>(new Tuple<String, DateTime, string>[] { new Tuple<String, DateTime, string>(caller, DateTime.Now, msg) });
             }
-            SendToChannel(String.Format("Will tell that to {0} when they are round", parts[0]));
+            SendMessage(source, String.Format("Will tell that to {0} when they are round", parts[0]));
         }
 
-        private void Alias(String caller, String args)
+        private void Alias(string caller, string args, string source)
         {
             args = args.Trim();
             var argParts = args.Split(' ');
@@ -125,27 +125,27 @@ namespace FattyBot
                             }
                         }
                         if (firstNamePresent != null && secondNamePresent != null)
-                            SendToChannel("Both nicks are already assigned");
+                            SendMessage(source, "Both nicks are already assigned");
                         else if (firstNamePresent == null && secondNamePresent != null) {
                             secondNamePresent.Add(firstName);
-                            SendToChannel(String.Format("{0} assigned to alias group containing {1}", firstName, secondName));
+                            SendMessage(source, String.Format("{0} assigned to alias group containing {1}", firstName, secondName));
                         }
                         else if (firstNamePresent != null && secondNamePresent == null) {
                             firstNamePresent.Add(secondName);
-                            SendToChannel(String.Format("{0} assigned to alias group containing {1}", secondName, firstName));
+                            SendMessage(source, String.Format("{0} assigned to alias group containing {1}", secondName, firstName));
                         }
                         else if (firstNamePresent == null && secondNamePresent == null) {
                             HashSet<string> newAliasSet = new HashSet<string>();
                             newAliasSet.Add(firstName);
                             newAliasSet.Add(secondName);
                             AliasList.Add(newAliasSet);
-                            SendToChannel(String.Format("New alias group created for {0} and {1}", firstName, secondName));
+                            SendMessage(source, String.Format("New alias group created for {0} and {1}", firstName, secondName));
                         }
                             break;
                     case "remove":
                         break;
                     default:
-                        SendToChannel(String.Format("{0} is an unknown operation, try 'add' or 'remove'", operation));
+                        SendMessage(source, String.Format("{0} is an unknown operation, try 'add' or 'remove'", operation));
                         break;
                 }
             }
@@ -161,34 +161,34 @@ namespace FattyBot
                 }
                 if (sb.Length > 0) {
                     sb.Remove(sb.Length - 2, 1);
-                    SendToChannel(sb.ToString());
+                    SendMessage(source, sb.ToString());
                 }
                 else {
-                    SendToChannel(String.Format("No results found for {0}", args));
+                    SendMessage(source, String.Format("No results found for {0}", args));
                 }
             }
             else
             {
-                SendToChannel("What are you doing?");
+                SendMessage(source, "What are you doing?");
             }
             
         }
 
-        private void Google(String caller, String args)
+        private void Google(string caller, string args, string source)
         {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&q=";
             searchURL += args;
-            GoogleAPIPrinter(searchURL);
+            GoogleAPIPrinter(searchURL, source);
         }
 
-        private void GoogleImageSearch(String caller, String args)
+        private void GoogleImageSearch(String caller, String args, string source)
         {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&searchType=image&q=";
             searchURL += args;
-            GoogleAPIPrinter(searchURL);
+            GoogleAPIPrinter(searchURL, source);
         }
 
-        private void GoogleAPIPrinter(string searchURL)
+        private void GoogleAPIPrinter(string searchURL, string source)
         {
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
             HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
@@ -198,7 +198,7 @@ namespace FattyBot
             GoogleSearchResults results = JsonConvert.DeserializeObject<GoogleSearchResults>(data);
             StringBuilder messageAccumulator = new StringBuilder();
             int i = 0;
-            int messageOverhead = GetMessageOverhead();
+            int messageOverhead = GetMessageOverhead(source);
             while (i < 10)
             {
                 if (results.items != null && results.items.Length >= i)
@@ -220,9 +220,9 @@ namespace FattyBot
                 }
             }
             if (messageAccumulator.Length == 0)
-                SendToChannel("No Results Found");
+                SendMessage(source, "No Results Found");
             else
-                SendToChannel(messageAccumulator.ToString());
+                SendMessage(source, messageAccumulator.ToString());
         }
                 
         private string GetPrettyTime(TimeSpan ts)
@@ -254,9 +254,9 @@ namespace FattyBot
             return timeLastSeen;
         }
 
-        private int GetMessageOverhead()
+        private int GetMessageOverhead( string source)
         {
-            return  String.Format("PRIVMSG {0} :", IrcObject.IrcChannel).Length;
+            return  String.Format("PRIVMSG {0} :", source).Length;
         }
 
     }

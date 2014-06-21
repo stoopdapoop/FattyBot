@@ -3,10 +3,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 using System.Threading;
+using System.Text;
 
 namespace System.Net {
 	#region Delegates
-    public delegate void ChannelMessage(string IrcUser, string Message, string Channel);
+    public delegate void ChannelMessage(string IrcUser, string Message);
     public delegate void PrivateMessage(string IrcUser, string Message);
 	public delegate void CommandReceived(string IrcCommand);
 	public delegate void TopicSet(string IrcChannel, string IrcTopic);
@@ -179,6 +180,7 @@ namespace System.Net {
 							case "NICK": this.IrcNickChange(commandParts); break;
 							case "KICK": this.IrcKick(commandParts); break;
 							case "QUIT": this.IrcQuit(commandParts); break;
+                            case "PRIVMSG": this.IrcPrivateMessage(commandParts); break;
 						}
 					}
 				}
@@ -287,6 +289,25 @@ namespace System.Net {
 			}
 			if (eventQuit != null) { this.eventQuit(UserQuit, QuitMessage.Remove(0, 1).Trim()); }
 		} /* IrcQuit */
+
+        void IrcPrivateMessage(string[] IrcCommand)
+        {
+            string UserSender = IrcCommand[0].Split('!')[0];
+            string MessageTo = IrcCommand[2];
+            StringBuilder MessageBuilder = new StringBuilder(IrcCommand[3].Substring(1));
+            for (int intI = 4; intI < IrcCommand.Length; intI++) {
+                MessageBuilder.Append(" " + IrcCommand[intI]);
+            }
+            if (MessageTo == this.IrcChannel) {
+                if (eventChannelMessage != null) { this.eventChannelMessage(UserSender, MessageBuilder.ToString()); }
+            }
+            else if (MessageTo == this.IrcNick) {
+                if (eventPrivateMessage != null) { this.eventPrivateMessage(UserSender, MessageBuilder.ToString()); }
+            }
+            
+
+        }
+
 		#endregion
 		#endregion
 	} /* IRC */
