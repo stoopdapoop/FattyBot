@@ -6,8 +6,8 @@ using System.Threading;
 
 namespace System.Net {
 	#region Delegates
-    //public delegate void ChannelMessage(string IrcUser, string Message, string Channel);
-    //public delegate void PrivateMessage(string IrcUser, string Message);
+    public delegate void ChannelMessage(string IrcUser, string Message, string Channel);
+    public delegate void PrivateMessage(string IrcUser, string Message);
 	public delegate void CommandReceived(string IrcCommand);
 	public delegate void TopicSet(string IrcChannel, string IrcTopic);
 	public delegate void TopicOwner(string IrcChannel, string IrcUser, string TopicDate);
@@ -23,8 +23,8 @@ namespace System.Net {
 	
 	public class IRC {
 		#region Events
-        //public event ChannelMessage eventChannelMessage;
-        //public event PrivateMessage eventPrivateMessage;
+        public event ChannelMessage eventChannelMessage;
+        public event PrivateMessage eventPrivateMessage;
 		public event CommandReceived eventReceiving;
 		public event TopicSet eventTopicSet;
 		public event TopicOwner eventTopicOwner;

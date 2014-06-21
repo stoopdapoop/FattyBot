@@ -9,9 +9,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("FattyBot")]
 [assembly: AssemblyDescription("Console IRC Bot")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("http://www.cumps.be/")]
+[assembly: AssemblyCompany("http://www.tri4.net/brown")]
 [assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("David Cumps")]
+[assembly: AssemblyCopyright("Javad Kouchakzadeh")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 

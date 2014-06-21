@@ -24,10 +24,10 @@ namespace FattyBot {
             //string IrcChan = Console.ReadLine();
 
 
-            string IrcServer = "chat.freenode.net";
-            int IrcPort = 6665;
+            string IrcServer = "irc.rizon.us";
+            int IrcPort = 6667;
             string IrcUser = "fatty";
-            string IrcChan = "#reddit-gamedev";
+            string IrcChan = "#cuties";
             try
             {
                 FattyBot IrcApp = new FattyBot(IrcServer, IrcPort, IrcUser, IrcChan);

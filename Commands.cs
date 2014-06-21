@@ -13,14 +13,13 @@ namespace FattyBot
     {
 
         #region GoogleStructs
+        const string GoogleAPIKey = "AIzaSyDniQGV3voKW5ZSrqWfiXgnWz-2AX6xNBo";
         private class GoogleSearchItem
         {
             public string kind { get; set; }
             public string title { get; set; }
             public string link { get; set; }
             public string displayLink { get; set; }
-            // and so on... add more properties here if you want
-            // to deserialize them
         }
 
         private class SourceUrl
@@ -34,8 +33,6 @@ namespace FattyBot
             public string kind { get; set; }
             public SourceUrl url { get; set; }
             public GoogleSearchItem[] items { get; set; }
-            // and so on... add more properties here if you want to
-            // deserialize them
         }
         #endregion
 
@@ -179,14 +176,14 @@ namespace FattyBot
 
         private void Google(String caller, String args)
         {
-            string searchURL = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBly4r53qyXHbwbwr4j3Te0OazoBEhWsHY&cx=016968405084681006944:ksw5ydltpt0&q=";
+            string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&q=";
             searchURL += args;
             GoogleAPIPrinter(searchURL);
         }
 
         private void GoogleImageSearch(String caller, String args)
         {
-            string searchURL = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBly4r53qyXHbwbwr4j3Te0OazoBEhWsHY&cx=016968405084681006944:ksw5ydltpt0&searchType=image&q=";
+            string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&searchType=image&q=";
             searchURL += args;
             GoogleAPIPrinter(searchURL);
         }

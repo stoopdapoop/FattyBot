@@ -15,3 +15,11 @@ serialize tells and aliases
 allow to reconnect
 
 github -- remove unecessary stuff
+
+change help to "commands" and make help pm results
+
+.title for links
+
+http://www.dictionaryapi.com/products/api-collegiate-dictionary.htm
+
+amazon cloud hosting
