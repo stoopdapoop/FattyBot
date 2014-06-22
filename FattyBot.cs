@@ -56,7 +56,7 @@ namespace FattyBot {
             Commands.Add("g", new CommandMethod(Google));
             Commands.Add("gis", new CommandMethod(GoogleImageSearch));
             Commands.Add("alias", new CommandMethod(Alias));
-            Commands.Add("help", new CommandMethod(Help));
+            Commands.Add("commands", new CommandMethod(ListCommands));
 			
 			// Connect to server
 			IrcObject.Connect(IrcServer, IrcPort, "poopie");

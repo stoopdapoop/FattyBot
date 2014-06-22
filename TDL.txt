@@ -1,12 +1,8 @@
-Connect aliases to other commands, including seent
-
 tell overflows go to notice
 
 yahoo calc?
 
-serialize tells and aliases
-
-6288K memory
+serialize members
 
 allow to reconnect
 
@@ -21,3 +17,5 @@ amazon cloud hosting
 notice joiners tell notification
 
 Read APIKeys from file so I don't have to worry about commits
+
+make seen work with aliases

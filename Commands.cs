@@ -39,7 +39,7 @@ namespace FattyBot
 
         UserAliasesRegistry FattyUserAliases = new UserAliasesRegistry(); 
 
-        private void Help(string caller, string args, string source)
+        private void ListCommands(string caller, string args, string source)
         {
             StringBuilder availableMethodNames = new StringBuilder();
             foreach (KeyValuePair<string, CommandMethod> mthd in Commands)
