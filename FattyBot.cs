@@ -9,23 +9,14 @@ namespace FattyBot {
 		private IRC IrcObject;
         private const char CommandSymbol = ';';
         private Dictionary<string, CommandMethod> Commands = new Dictionary<string, CommandMethod>();
+        private TellManager FattyTellManager;
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
-        private Dictionary<string, List<Tuple<String, DateTime, String>>> TellList = new Dictionary<string, List<Tuple<String, DateTime, String>>>();
         static DateTime TimeOfLastSentMessage = DateTime.Now;
         private delegate void CommandMethod(string caller, string args, string source);
 		
 		static void Main(string[] args) {
-            
-            //Console.Write("Server: ");
-            //string IrcServer = Console.ReadLine();
-            //Console.Write("Port: ");
-            //int IrcPort = Convert.ToInt32(Console.ReadLine());
-            //Console.Write("User: ");
-            //string IrcUser = Console.ReadLine();
-            //Console.Write("Chan: ");
-            //string IrcChan = Console.ReadLine();
 
-
+                      
             string IrcServer = "irc.rizon.us";
             int IrcPort = 6667;
             string IrcUser = "fatty";
@@ -38,9 +29,11 @@ namespace FattyBot {
             {
                 Console.WriteLine(e.ToString() + e.StackTrace);
             }
-		} /* Main */
+		} 
 		
 		private FattyBot(string IrcServer, int IrcPort, string IrcUser, string IrcChan) {
+            FattyTellManager = new TellManager(FattyUserAliases);
+
 			IrcObject = new IRC(IrcUser, IrcChan);
 
 			// Assign events
@@ -67,19 +60,18 @@ namespace FattyBot {
 			
 			// Connect to server
 			IrcObject.Connect(IrcServer, IrcPort, "poopie");
-		} /* cIRC */
+		} 
 		
 		private void IrcCommandReceived(string IrcCommand) {
-           	
-		} /* IrcCommandReceived */
+		}
 		
 		private void IrcTopicSet(string IrcChan, string IrcTopic) {
 			Console.WriteLine(String.Format("Topic of {0} is: {1}", IrcChan, IrcTopic));
-		} /* IrcTopicSet */
+		}
 		
 		private void IrcTopicOwner(string IrcChan, string IrcUser, string TopicDate) {
 			Console.WriteLine(String.Format("Topic of {0} set by {1} on {2} (unixtime)", IrcChan, IrcUser, TopicDate));
-		} /* IrcTopicSet */
+		} 
 		
 		private void IrcNamesList(string UserNames) {
 			Console.WriteLine(String.Format("Names List: {0}", UserNames));
@@ -90,13 +82,9 @@ namespace FattyBot {
 		} 
 		
 		private void IrcJoin(string IrcChan, string IrcUser) {
-			//Console.WriteLine(String.Format("{0} joins {1}", IrcUser, IrcChan));
-			//IrcObject.IrcWriter.WriteLine(String.Format("NOTICE {0} :Hello {0}, welcome to {1}!", IrcUser, IrcChan));
-			//IrcObject.IrcWriter.Flush ();	
 		} 
 		
-		private void IrcPart(string IrcChan, string IrcUser) {
-			//Console.WriteLine(String.Format("{0} parts {1}", IrcUser, IrcChan));
+		private void IrcPart(string IrcChan, string IrcUser) {			
 		} 
 		
 		private void IrcMode(string IrcChan, string IrcUser, string UserMode) {
@@ -114,7 +102,6 @@ namespace FattyBot {
 		} 
 		
 		private void IrcQuit(string UserQuit, string QuitMessage) {
-			//Console.WriteLine(String.Format("{0} has quit IRC ({1})", UserQuit, QuitMessage));
 		} 
 
         private void IrcChannelMessage(string IrcUser, string Message) {
@@ -151,7 +138,7 @@ namespace FattyBot {
 
         private void DeliverTells(string IrcUser, string MessageSource) {
             List<Tuple<String, DateTime, string>> waitingTells;
-            bool hasMessagesWaiting = TellList.TryGetValue(IrcUser, out waitingTells);
+            bool hasMessagesWaiting = FattyTellManager.GetTellsForUser(IrcUser, out waitingTells);
             if (hasMessagesWaiting) {
                 foreach (var waitingMessage in waitingTells) {
                     string fromUser = waitingMessage.Item1;
@@ -160,7 +147,6 @@ namespace FattyBot {
                     string messageSent = waitingMessage.Item3;
                     SendMessage(MessageSource, String.Format("{0}:<{1}>{2} - sent {3} ago.", IrcUser, fromUser, messageSent, prettyTime));
                 }
-                TellList.Remove(IrcUser);
             }
         }
 
@@ -178,14 +164,8 @@ namespace FattyBot {
 
         private void SendMessage(string sendTo, string message)
         {
-            //Encoding enc = new UTF8Encoding(false, false);
-
             string outputMessage = String.Format("PRIVMSG {0} :{1}", sendTo, message);
-            //byte[] rawBytes = enc.GetBytes(outputMessage);
-            //char[] rawChars = enc.GetChars(rawBytes);
-            //IrcObject.IrcWriter.WriteLine(rawChars);
-            // 300 milliseconds
-            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0 ,300);
+            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0 ,800);
             TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;
             if (TimeSinceLastMessageSent < SendInterval)
                 Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
@@ -198,5 +178,5 @@ namespace FattyBot {
 
         }
 
-	} /* cIRC */
-} /* cIRC */
+	}
+} 

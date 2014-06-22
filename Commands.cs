@@ -37,7 +37,7 @@ namespace FattyBot
         #endregion
 
 
-        UserAliasesRegistry UserAliases = new UserAliasesRegistry(); 
+        UserAliasesRegistry FattyUserAliases = new UserAliasesRegistry(); 
 
         private void Help(string caller, string args, string source)
         {
@@ -85,12 +85,9 @@ namespace FattyBot
                     SendMessage(source, "xD");
                     continue;
                 }
-                List<Tuple<String, DateTime, String>> thisTell;
-                bool isPresent = TellList.TryGetValue(recip, out thisTell);
-                if (isPresent)
-                    thisTell.Add(new Tuple<String, DateTime, String>(caller, DateTime.Now, msg));
-                else
-                    TellList[recip] = new List<Tuple<String, DateTime, string>>(new Tuple<String, DateTime, string>[] { new Tuple<String, DateTime, string>(caller, DateTime.Now, msg) });
+                else {
+                    FattyTellManager.AddTellForUser(recip, caller, msg);
+                }
             }
             SendMessage(source, String.Format("Will tell that to {0} when they are round", parts[0]));
         }
@@ -110,7 +107,7 @@ namespace FattyBot
         private void DisplayUserAliases(string alias, string source, string args) {
             StringBuilder sb = new StringBuilder();
             UserAliasGroup ag;
-            if (UserAliases.GetAliasGroup(alias, out ag)) {
+            if (FattyUserAliases.GetAliasGroup(alias, out ag)) {
                 var names = ag.GetUserAliases();
                 foreach (string name in names) {
                     sb.Append(name + " ");
@@ -129,9 +126,10 @@ namespace FattyBot
             string secondName = argParts[2];
             switch (operation) {
                 case "add":
-                    SendMessage(source, UserAliases.AddAlias(firstName, secondName));
+                    SendMessage(source, FattyUserAliases.AddAlias(firstName, secondName));
                     break;
                 case "remove":
+                    SendMessage(source, FattyUserAliases.RemoveAlias(firstName, secondName));
                     break;
                 default:
                     SendMessage(source, String.Format("{0} is an unknown operation, try 'add' or 'remove'", operation));

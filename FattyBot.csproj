@@ -152,6 +152,7 @@
     <Compile Include="System.Net.IRC.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TellManager.cs" />
     <Content Include="App.ico" />
     <Content Include="TDL.txt" />
   </ItemGroup>

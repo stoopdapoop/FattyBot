@@ -35,6 +35,19 @@ namespace FattyBot {
                 
                 return "Something very bad has happened";
             }
+
+            public string RemoveAlias(string aliasToRemove, string aliasGroupName) {
+                UserAliasGroup ag;
+                if (!AliasRegistry.TryGetValue(aliasGroupName, out ag))
+                    return String.Format("Could not find group containing {0}", aliasGroupName);
+
+                if (ag.RemoveAlias(aliasToRemove))
+                    return String.Format("{0} was removed from {1}'s alias group", aliasToRemove, aliasGroupName);
+
+                else
+                    return "Something bad has happened";
+            }
+
         }
 
         public class UserAliasGroup {
@@ -48,9 +61,12 @@ namespace FattyBot {
                 return Aliases.Add(alias);
             }
 
+            public bool RemoveAlias(string aliasToRemove) {
+                return Aliases.Remove(aliasToRemove);
+            }
+
             public IEnumerable<string> GetUserAliases() {
                 return Aliases.AsEnumerable();
             }
-            
         }
 }

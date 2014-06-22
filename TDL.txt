@@ -1,9 +1,5 @@
 Connect aliases to other commands, including seent
 
--------
-
-create new delegates for channel messages and PM's
-
 tell overflows go to notice
 
 yahoo calc?
@@ -23,3 +19,5 @@ http://www.dictionaryapi.com/products/api-collegiate-dictionary.htm
 amazon cloud hosting
 
 notice joiners tell notification
+
+Read APIKeys from file so I don't have to worry about commits
