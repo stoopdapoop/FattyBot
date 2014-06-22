@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace FattyBot {
 	partial class FattyBot {
@@ -10,6 +11,7 @@ namespace FattyBot {
         private Dictionary<string, CommandMethod> Commands = new Dictionary<string, CommandMethod>();
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
         private Dictionary<string, List<Tuple<String, DateTime, String>>> TellList = new Dictionary<string, List<Tuple<String, DateTime, String>>>();
+        static DateTime TimeOfLastSentMessage = DateTime.Now;
         private delegate void CommandMethod(string caller, string args, string source);
 		
 		static void Main(string[] args) {
@@ -68,15 +70,7 @@ namespace FattyBot {
 		} /* cIRC */
 		
 		private void IrcCommandReceived(string IrcCommand) {
-           
-            
-            {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine(String.Format("{0}: {1}", DateTime.Now.ToShortTimeString(), IrcCommand));
-                Console.ResetColor();
-            }
-           
-			
+           	
 		} /* IrcCommandReceived */
 		
 		private void IrcTopicSet(string IrcChan, string IrcTopic) {
@@ -89,39 +83,39 @@ namespace FattyBot {
 		
 		private void IrcNamesList(string UserNames) {
 			Console.WriteLine(String.Format("Names List: {0}", UserNames));
-		} /* IrcNamesList */
+		} 
 		
 		private void IrcServerMessage(string ServerMessage) {
 			Console.WriteLine(String.Format("Server Message: {0}", ServerMessage));
-		} /* IrcNamesList */
+		} 
 		
 		private void IrcJoin(string IrcChan, string IrcUser) {
 			//Console.WriteLine(String.Format("{0} joins {1}", IrcUser, IrcChan));
 			//IrcObject.IrcWriter.WriteLine(String.Format("NOTICE {0} :Hello {0}, welcome to {1}!", IrcUser, IrcChan));
 			//IrcObject.IrcWriter.Flush ();	
-		} /* IrcJoin */
+		} 
 		
 		private void IrcPart(string IrcChan, string IrcUser) {
 			//Console.WriteLine(String.Format("{0} parts {1}", IrcUser, IrcChan));
-		} /* IrcPart */
+		} 
 		
 		private void IrcMode(string IrcChan, string IrcUser, string UserMode) {
 			if (IrcUser != IrcChan) {
 				Console.WriteLine(String.Format("{0} sets {1} in {2}", IrcUser, UserMode, IrcChan));
 			}
-		} /* IrcMode */
+		} 
 		
 		private void IrcNickChange(string UserOldNick, string UserNewNick) {
 			Console.WriteLine(String.Format("{0} changes nick to {1}", UserOldNick, UserNewNick));
-		} /* IrcNickChange */
+		} 
 		
 		private void IrcKick(string IrcChannel, string UserKicker, string UserKicked, string KickMessage) {
 			Console.WriteLine(String.Format("{0} kicks {1} out {2} ({3})", UserKicker, UserKicked, IrcChannel, KickMessage));
-		} /* IrcKick */
+		} 
 		
 		private void IrcQuit(string UserQuit, string QuitMessage) {
 			//Console.WriteLine(String.Format("{0} has quit IRC ({1})", UserQuit, QuitMessage));
-		} /* IrcQuit */
+		} 
 
         private void IrcChannelMessage(string IrcUser, string Message) {
             MonitorChat(IrcUser, Message, IrcObject.IrcChannel);
@@ -190,8 +184,14 @@ namespace FattyBot {
             //byte[] rawBytes = enc.GetBytes(outputMessage);
             //char[] rawChars = enc.GetChars(rawBytes);
             //IrcObject.IrcWriter.WriteLine(rawChars);
+            // 300 milliseconds
+            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0 ,300);
+            TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;
+            if (TimeSinceLastMessageSent < SendInterval)
+                Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
             IrcObject.IrcWriter.WriteLine(outputMessage);
             IrcObject.IrcWriter.Flush();
+            TimeOfLastSentMessage = DateTime.Now;
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
             Console.ResetColor();

@@ -36,7 +36,8 @@ namespace FattyBot
         }
         #endregion
 
-        List<HashSet<String>> AliasList = new List<HashSet<String>>();
+
+        UserAliasesRegistry UserAliases = new UserAliasesRegistry(); 
 
         private void Help(string caller, string args, string source)
         {
@@ -94,86 +95,49 @@ namespace FattyBot
             SendMessage(source, String.Format("Will tell that to {0} when they are round", parts[0]));
         }
 
-        private void Alias(string caller, string args, string source)
-        {
+        private void Alias(string caller, string args, string source) {
             args = args.Trim();
             var argParts = args.Split(' ');
 
-            if(argParts.Length == 3)
-            {
-                string operation = argParts[0];
-                string firstName = argParts[1];
-                string secondName = argParts[2];
-                switch (operation)
-                {
-                    case "add":
-                        HashSet<string> firstNamePresent = null;
-                        HashSet<string> secondNamePresent = null;
-                        foreach (HashSet<string> hs in AliasList)
-                        {
-                            if(firstNamePresent != null && secondNamePresent != null)
-                                break;
-                            if(firstNamePresent == null) {
-                                if (hs.Contains(firstName)) {
-                                    firstNamePresent = hs;
-                                }
-                            }
-                            if (secondNamePresent == null) {
-                                if (hs.Contains(secondName)) {
-                                    secondNamePresent = hs;
-                                }
-                            }
-                        }
-                        if (firstNamePresent != null && secondNamePresent != null)
-                            SendMessage(source, "Both nicks are already assigned");
-                        else if (firstNamePresent == null && secondNamePresent != null) {
-                            secondNamePresent.Add(firstName);
-                            SendMessage(source, String.Format("{0} assigned to alias group containing {1}", firstName, secondName));
-                        }
-                        else if (firstNamePresent != null && secondNamePresent == null) {
-                            firstNamePresent.Add(secondName);
-                            SendMessage(source, String.Format("{0} assigned to alias group containing {1}", secondName, firstName));
-                        }
-                        else if (firstNamePresent == null && secondNamePresent == null) {
-                            HashSet<string> newAliasSet = new HashSet<string>();
-                            newAliasSet.Add(firstName);
-                            newAliasSet.Add(secondName);
-                            AliasList.Add(newAliasSet);
-                            SendMessage(source, String.Format("New alias group created for {0} and {1}", firstName, secondName));
-                        }
-                            break;
-                    case "remove":
-                        break;
-                    default:
-                        SendMessage(source, String.Format("{0} is an unknown operation, try 'add' or 'remove'", operation));
-                        break;
-                }
-            }
-            else if (argParts.Length == 1) {
-                StringBuilder sb = new StringBuilder();
-                foreach (HashSet<string> hs in AliasList) {
-                    if (hs.Contains(args)) {
-                        foreach (string userAlias in hs) {
-                            sb.Append(userAlias);
-                            sb.Append(", ");
-                        }
-                    }     
-                }
-                if (sb.Length > 0) {
-                    sb.Remove(sb.Length - 2, 1);
-                    SendMessage(source, sb.ToString());
-                }
-                else {
-                    SendMessage(source, String.Format("No results found for {0}", args));
-                }
-            }
+            if (argParts.Length == 3)
+                PerformAliasOperation(argParts, source);
+            else if (argParts.Length == 1)
+                DisplayUserAliases(argParts[0], source, args);
             else
-            {
-                SendMessage(source, "What are you doing?");
-            }
-            
+                SendMessage(source, "Not the right number of inputs");
         }
 
+        private void DisplayUserAliases(string alias, string source, string args) {
+            StringBuilder sb = new StringBuilder();
+            UserAliasGroup ag;
+            if (UserAliases.GetAliasGroup(alias, out ag)) {
+                var names = ag.GetUserAliases();
+                foreach (string name in names) {
+                    sb.Append(name + " ");
+                }
+                SendMessage(source, sb.ToString());
+            }
+            else {
+                SendMessage(source, String.Format("No results found for {0}", args));
+            }
+        }
+        private void PerformAliasOperation(string[] argParts, string source) {
+            if (argParts.Length < 3)
+                SendMessage(source, "error parsing arguments");
+            string operation = argParts[0];
+            string firstName = argParts[1];
+            string secondName = argParts[2];
+            switch (operation) {
+                case "add":
+                    SendMessage(source, UserAliases.AddAlias(firstName, secondName));
+                    break;
+                case "remove":
+                    break;
+                default:
+                    SendMessage(source, String.Format("{0} is an unknown operation, try 'add' or 'remove'", operation));
+                    break;
+            }
+        }
         private void Google(string caller, string args, string source)
         {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&q=";

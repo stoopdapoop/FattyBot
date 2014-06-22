@@ -4,7 +4,7 @@ Connect aliases to other commands, including seent
 
 create new delegates for channel messages and PM's
 
-tell overflows go to pm
+tell overflows go to notice
 
 yahoo calc?
 
@@ -14,8 +14,6 @@ serialize tells and aliases
 
 allow to reconnect
 
-github -- remove unecessary stuff
-
 change help to "commands" and make help pm results
 
 .title for links
@@ -23,3 +21,5 @@ change help to "commands" and make help pm results
 http://www.dictionaryapi.com/products/api-collegiate-dictionary.htm
 
 amazon cloud hosting
+
+notice joiners tell notification
