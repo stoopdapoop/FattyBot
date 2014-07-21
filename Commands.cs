@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Net;
@@ -36,6 +37,7 @@ namespace FattyBot
         }
         #endregion
 
+        const string WolframAlphaKey = "95JE4A-XQLX9WPU99";
 
         UserAliasesRegistry FattyUserAliases = new UserAliasesRegistry(); 
 
@@ -102,6 +104,40 @@ namespace FattyBot
                 DisplayUserAliases(argParts[0], source, args);
             else
                 SendMessage(source, "Not the right number of inputs");
+        }
+
+        private void Math(string caller, string args, string source)
+        {
+            string searchURL = "http://api.wolframalpha.com/v2/query?input=" + args + "&appid=" + WolframAlphaKey;
+
+            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
+            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
+            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(reader);
+            StringBuilder messageAccumulator = new StringBuilder();
+            int messageOverhead = GetMessageOverhead(source);
+
+            XmlNodeList res = xmlDoc.GetElementsByTagName("plaintext");
+
+            for (int i = 0; i < res.Count; i++)
+            {
+                string value = res[i].InnerText;
+                string description = res[i].ParentNode.ParentNode.Attributes["title"].Value;
+                description = description + ":" + value;
+                if (description.Length + messageOverhead + messageAccumulator.Length <= 480)
+                    messageAccumulator.Append(description + " | ");
+                else
+                    break;
+            }  
+            
+            messageAccumulator.Replace("\n", "");
+            messageAccumulator.Replace("\r", "");
+
+             SendMessage(source, messageAccumulator.ToString());
+            
+            
         }
 
         private void DisplayUserAliases(string alias, string source, string args) {

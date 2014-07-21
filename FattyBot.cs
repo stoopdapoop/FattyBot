@@ -7,7 +7,7 @@ using System.Threading;
 namespace FattyBot {
 	partial class FattyBot {
 		private IRC IrcObject;
-        private const char CommandSymbol = ';';
+        private const char CommandSymbol = '.';
         private Dictionary<string, CommandMethod> Commands = new Dictionary<string, CommandMethod>();
         private TellManager FattyTellManager;
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
@@ -17,10 +17,11 @@ namespace FattyBot {
 		static void Main(string[] args) {
 
                       
-            string IrcServer = "irc.rizon.us";
-            int IrcPort = 6667;
-            string IrcUser = "fatty";
-            string IrcChan = "#cuties";
+            string IrcServer = args[0];
+            int IrcPort;
+            int.TryParse(args[1], out IrcPort);
+            string IrcUser = args[2];
+            string IrcChan = args[3];
             try
             {
                 FattyBot IrcApp = new FattyBot(IrcServer, IrcPort, IrcUser, IrcChan);
@@ -57,6 +58,7 @@ namespace FattyBot {
             Commands.Add("gis", new CommandMethod(GoogleImageSearch));
             Commands.Add("alias", new CommandMethod(Alias));
             Commands.Add("commands", new CommandMethod(ListCommands));
+            Commands.Add("wolfram", new CommandMethod(Math));
 			
 			// Connect to server
 			IrcObject.Connect(IrcServer, IrcPort, "poopie");
