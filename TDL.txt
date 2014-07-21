@@ -1,7 +1,5 @@
 tell overflows go to 
 
-yahoo calc?
-
 serialize members
 
 allow to reconnect

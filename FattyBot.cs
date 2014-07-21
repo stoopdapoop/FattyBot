@@ -8,7 +8,7 @@ namespace FattyBot {
 	partial class FattyBot {
 		private IRC IrcObject;
         private const char CommandSymbol = '.';
-        private Dictionary<string, CommandMethod> Commands = new Dictionary<string, CommandMethod>();
+        private Dictionary<string, Tuple<CommandMethod, string>> Commands = new Dictionary<string, Tuple<CommandMethod, string>>();
         private TellManager FattyTellManager;
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
         static DateTime TimeOfLastSentMessage = DateTime.Now;
@@ -51,14 +51,16 @@ namespace FattyBot {
 			IrcObject.eventQuit += new Quit(IrcQuit);
             IrcObject.eventChannelMessage += new ChannelMessage(IrcChannelMessage);
             IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
+            IrcObject.eventNotice += new Notice(IrcNotice);
 
-            Commands.Add("seen", new CommandMethod(Seen));
-            Commands.Add("tell", new CommandMethod(Tell));
-            Commands.Add("g", new CommandMethod(Google));
-            Commands.Add("gis", new CommandMethod(GoogleImageSearch));
-            Commands.Add("alias", new CommandMethod(Alias));
-            Commands.Add("commands", new CommandMethod(ListCommands));
-            Commands.Add("wolfram", new CommandMethod(Math));
+            Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
+            Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));
+            Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(Google), "Google search"));
+            Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(GoogleImageSearch), "Google image search"));
+            Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(Alias), "Assigns nicknames to people"));
+            Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
+            Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(Math), "queries Wolfram alpha"));
+            Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
 			
 			// Connect to server
 			IrcObject.Connect(IrcServer, IrcPort, "poopie");
@@ -90,13 +92,13 @@ namespace FattyBot {
 		} 
 		
 		private void IrcMode(string IrcChan, string IrcUser, string UserMode) {
-			if (IrcUser != IrcChan) {
-				Console.WriteLine(String.Format("{0} sets {1} in {2}", IrcUser, UserMode, IrcChan));
-			}
+            //if (IrcUser != IrcChan) {
+            //    Console.WriteLine(String.Format("{0} sets {1} in {2}", IrcUser, UserMode, IrcChan));
+            //}
 		} 
 		
 		private void IrcNickChange(string UserOldNick, string UserNewNick) {
-			Console.WriteLine(String.Format("{0} changes nick to {1}", UserOldNick, UserNewNick));
+			//Console.WriteLine(String.Format("{0} changes nick to {1}", UserOldNick, UserNewNick));
 		} 
 		
 		private void IrcKick(string IrcChannel, string UserKicker, string UserKicked, string KickMessage) {
@@ -113,6 +115,10 @@ namespace FattyBot {
 
         private void IrcPrivateMessage(string IrcUser, string Message) {
             MonitorChat(IrcUser, Message, IrcUser);
+        }
+
+        private void IrcNotice(string IrcUser, string Message) {
+            Console.WriteLine(String.Format("!NOTICE {0}:{1}", IrcUser, Message));
         }
 
         private void MonitorChat(string IrcUser, string Message, string MessageSource) {
@@ -134,7 +140,15 @@ namespace FattyBot {
                     commandName = command;
                     commandArgs = "";
                 }
-                RunCommand(IrcUser, MessageSource, commandName, commandArgs);
+                try
+                {
+                    RunCommand(IrcUser, MessageSource, commandName, commandArgs);
+                }
+                catch (Exception ex)
+                {
+                    SendMessage(MessageSource, ex.ToString());
+                }
+                
             }
         }
 
@@ -153,15 +167,16 @@ namespace FattyBot {
         }
 
         private void RunCommand(string caller, string source, string command, string args)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("{0} used command called \"{1}\" with arguments \"{2}\"", caller, command, args);
-            CommandMethod meth;
+        {           
+            Tuple<CommandMethod, string> meth;
             if (Commands.TryGetValue(command, out meth))
-                meth.Invoke(caller, args, source);
-            else
-                SendMessage(source, String.Format("{0} is not a valid command", command));
-            Console.ResetColor();
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine("{0} used command called \"{1}\" with arguments \"{2}\"", caller, command, args);
+                Console.ResetColor();
+                meth.Item1.Invoke(caller, args, source);
+            }
+            
         }
 
         private void SendMessage(string sendTo, string message)

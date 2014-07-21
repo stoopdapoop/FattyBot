@@ -20,6 +20,7 @@ namespace System.Net {
 	public delegate void NickChange(string UserOldNick, string UserNewNick);
 	public delegate void Kick(string IrcChannel, string UserKicker, string UserKicked, string KickMessage);
 	public delegate void Quit(string UserQuit, string QuitMessage);
+    public delegate void Notice(string IrcUser, string Message);
 	#endregion
 	
 	public class IRC {
@@ -37,6 +38,7 @@ namespace System.Net {
 		public event NickChange eventNickChange;
 		public event Kick eventKick;
 		public event Quit eventQuit;
+        public event Notice eventNotice;
 		#endregion
 		
 		#region Private Variables
@@ -133,6 +135,7 @@ namespace System.Net {
 
             Console.WriteLine("Connected to {0}", ircServer);
 
+
 			// Authenticate our user
 			string isInvisible = this.IsInvisble ? "8" : "0";
 			this.IrcWriter.WriteLine(String.Format("USER {0} {1} * :{2}", this.IrcUser, isInvisible, this.IrcRealName));
@@ -146,50 +149,92 @@ namespace System.Net {
 
 			// Listen for commands
 			while (true) {
-				string ircCommand;		
-				while ((ircCommand = this.IrcReader.ReadLine()) != null) {
-					if (eventReceiving != null) { this.eventReceiving(ircCommand); }
-					
-					string[] commandParts = new string[ircCommand.Split(' ').Length];
-					commandParts = ircCommand.Split(' ');
-					if (commandParts[0].Substring(0, 1) == ":") {
-						commandParts[0] = commandParts[0].Remove(0, 1);
-					}
-					
-					if (commandParts[0] == this.IrcServer) {
-						// Server message
-						switch (commandParts[1]) {
-							case "332": this.IrcTopic(commandParts); break;
-							case "333": this.IrcTopicOwner(commandParts); break;
-							case "353": this.IrcNamesList(commandParts); break;
-							case "366": /*this.IrcEndNamesList(commandParts);*/ break;
-							case "372": /*this.IrcMOTD(commandParts);*/ break;
-							case "376": /*this.IrcEndMOTD(commandParts);*/ break;
-							default: this.IrcServerMessage(commandParts); break;
-						}
-					} else if (commandParts[0] == "PING") {
-						// Server PING, send PONG back
-						this.IrcPing(commandParts);
-					} else {
-						// Normal message
-						string commandAction = commandParts[1];
-						switch (commandAction) {
-							case "JOIN": this.IrcJoin(commandParts); break;
-							case "PART": this.IrcPart(commandParts); break;
-							case "MODE": this.IrcMode(commandParts); break;
-							case "NICK": this.IrcNickChange(commandParts); break;
-							case "KICK": this.IrcKick(commandParts); break;
-							case "QUIT": this.IrcQuit(commandParts); break;
-                            case "PRIVMSG": this.IrcPrivateMessage(commandParts); break;
-						}
-					}
-				}
-			
+                ListenForCommands();
+							
 				this.IrcWriter.Close();
 				this.IrcReader.Close();
 				this.IrcConnection.Close();
 			}
 		} /* Connect */
+
+        private void ListenForCommands()
+        {
+            try
+            {
+                if(!this.IrcConnection.Connected)
+                {
+                    Thread.Sleep(5000);
+                    this.IrcConnection = new TcpClient(this.IrcServer, this.IrcPort);
+			        this.IrcStream = this.IrcConnection.GetStream();
+			        this.IrcReader = new StreamReader(this.IrcStream);
+			        this.IrcWriter = new StreamWriter(this.IrcStream);
+                }
+
+                string ircCommand;
+                while ((ircCommand = this.IrcReader.ReadLine()) != null)
+                {
+                    if (eventReceiving != null) { this.eventReceiving(ircCommand); }
+
+                    string[] commandParts = new string[ircCommand.Split(' ').Length];
+                    commandParts = ircCommand.Split(' ');
+                    if (commandParts[0].Substring(0, 1) == ":")
+                    {
+                        commandParts[0] = commandParts[0].Remove(0, 1);
+                    }
+
+                    if (commandParts[0] == this.IrcServer)
+                    {
+                        // Server message
+                        switch (commandParts[1])
+                        {
+                            case "332": this.IrcTopic(commandParts); break;
+                            case "333": this.IrcTopicOwner(commandParts); break;
+                            case "353": this.IrcNamesList(commandParts); break;
+                            case "366": /*this.IrcEndNamesList(commandParts);*/ break;
+                            case "372": /*this.IrcMOTD(commandParts);*/ break;
+                            case "376": /*this.IrcEndMOTD(commandParts);*/ break;
+                            case "433": 
+                                Random rand = new Random();
+                                this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick+rand.Next(9999)));
+			                    this.IrcWriter.Flush();
+                                this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
+			                    this.IrcWriter.Flush();
+                                break;
+                            default: this.IrcServerMessage(commandParts); break;
+
+                        }
+                    }
+                    else if (commandParts[0] == "PING")
+                    {
+                        // Server PING, send PONG back
+                        this.IrcPing(commandParts);
+                    }
+                    else
+                    {
+                        // Normal message
+                        string commandAction = commandParts[1];
+                        switch (commandAction)
+                        {
+                            case "JOIN": this.IrcJoin(commandParts); break;
+                            case "PART": this.IrcPart(commandParts); break;
+                            case "MODE": this.IrcMode(commandParts); break;
+                            case "NICK": this.IrcNickChange(commandParts); break;
+                            case "KICK": this.IrcKick(commandParts); break;
+                            case "QUIT": this.IrcQuit(commandParts); break;
+                            case "PRIVMSG": this.IrcPrivateMessage(commandParts); break;
+                            case "NOTICE": this.IrcNotice(commandParts); break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if(this.IrcConnection.Connected)
+                    throw;
+                
+            }
+            
+        }
 		#endregion
 		
 		#region Private Methods
@@ -303,9 +348,18 @@ namespace System.Net {
             }
             else if (MessageTo == this.IrcNick) {
                 if (eventPrivateMessage != null) { this.eventPrivateMessage(UserSender, MessageBuilder.ToString()); }
-            }
-            
+            }         
 
+        }
+
+        void IrcNotice(string[] IrcCommand)
+        {
+            string UserSender = IrcCommand[0].Split('!')[0];
+            StringBuilder MessageBuilder = new StringBuilder(IrcCommand[3].Substring(1));
+            for (int intI = 4; intI < IrcCommand.Length; intI++) {
+                MessageBuilder.Append(" " + IrcCommand[intI]);
+            }
+            if (eventNotice != null) { this.eventNotice(UserSender, MessageBuilder.ToString()) ;}
         }
 
 		#endregion

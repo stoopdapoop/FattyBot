@@ -44,10 +44,10 @@ namespace FattyBot
         private void ListCommands(string caller, string args, string source)
         {
             StringBuilder availableMethodNames = new StringBuilder();
-            foreach (KeyValuePair<string, CommandMethod> mthd in Commands)
+            foreach (KeyValuePair<string, Tuple<CommandMethod, string>> mthd in Commands)
             {
-                availableMethodNames.Append(mthd.Key);
-                availableMethodNames.Append(", ");
+                availableMethodNames.Append(CommandSymbol+mthd.Key);
+                availableMethodNames.Append(":" + mthd.Value.Item2 + ", ");
             }
             availableMethodNames.Remove(availableMethodNames.Length - 2, 1);
             SendMessage(source, availableMethodNames.ToString());
@@ -106,6 +106,21 @@ namespace FattyBot
                 SendMessage(source, "Not the right number of inputs");
         }
 
+        #region EightBall
+        readonly string[] EightBallResponses = { "It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", 
+                             "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy, try again", "Try again later", "Better not tell you now", 
+                             "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
+
+        private void EightBall(string caller, string args, string source)
+        {
+            Random rand = new Random();
+
+            SendMessage(source, String.Format("{0}: {1}", caller, EightBallResponses[rand.Next(EightBallResponses.Length)]));
+        }
+
+
+        #endregion
+
         private void Math(string caller, string args, string source)
         {
             string searchURL = "http://api.wolframalpha.com/v2/query?input=" + args + "&appid=" + WolframAlphaKey;
@@ -118,6 +133,8 @@ namespace FattyBot
             xmlDoc.Load(reader);
             StringBuilder messageAccumulator = new StringBuilder();
             int messageOverhead = GetMessageOverhead(source);
+
+
 
             XmlNodeList res = xmlDoc.GetElementsByTagName("plaintext");
 
@@ -132,12 +149,11 @@ namespace FattyBot
                     break;
             }  
             
-            messageAccumulator.Replace("\n", "");
-            messageAccumulator.Replace("\r", "");
+            messageAccumulator.Replace("\n", " ");
+            messageAccumulator.Replace("\r", " ");
 
              SendMessage(source, messageAccumulator.ToString());
-            
-            
+                
         }
 
         private void DisplayUserAliases(string alias, string source, string args) {
@@ -154,6 +170,7 @@ namespace FattyBot
                 SendMessage(source, String.Format("No results found for {0}", args));
             }
         }
+
         private void PerformAliasOperation(string[] argParts, string source) {
             if (argParts.Length < 3)
                 SendMessage(source, "error parsing arguments");
@@ -172,6 +189,7 @@ namespace FattyBot
                     break;
             }
         }
+
         private void Google(string caller, string args, string source)
         {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&q=";
