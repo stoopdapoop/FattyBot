@@ -135,24 +135,58 @@ namespace FattyBot
             int messageOverhead = GetMessageOverhead(source);
 
 
-
-            XmlNodeList res = xmlDoc.GetElementsByTagName("plaintext");
-
-            for (int i = 0; i < res.Count; i++)
+            XmlNodeList res = xmlDoc.GetElementsByTagName("queryresult");
+            if (res[0].Attributes["success"].Value == "false")
             {
-                string value = res[i].InnerText;
-                string description = res[i].ParentNode.ParentNode.Attributes["title"].Value;
-                description = description + ":" + value;
-                if (description.Length + messageOverhead + messageAccumulator.Length <= 480)
-                    messageAccumulator.Append(description + " | ");
-                else
-                    break;
-            }  
-            
-            messageAccumulator.Replace("\n", " ");
-            messageAccumulator.Replace("\r", " ");
+                messageAccumulator.Append("Query failed: ");
+                res = xmlDoc.GetElementsByTagName("tip");
+                for (int i = 0; i < res.Count; i++)
+                {
+                    string desc = res[i].InnerText;
+                    if (desc.Length + messageOverhead + messageAccumulator.Length <= 480)
+                        messageAccumulator.Append(desc + ". ");
+                    else
+                        break;
+                }
+                res = xmlDoc.GetElementsByTagName("didyoumean");
+                
+                for (int i = 0; i < res.Count; i++)
+                {
+                    string desc = "";
+                    if(i==0)
+                        desc += "Did you mean: ";
+                    desc += res[i].InnerText + " ? ";
+                    if (desc.Length + messageOverhead + messageAccumulator.Length <= 480)
+                        messageAccumulator.Append(desc);
+                    else
+                        break;
+                }
+                SendMessage(source, messageAccumulator.ToString());
+            }
+            else
+            {
+                res = xmlDoc.GetElementsByTagName("plaintext");
 
-             SendMessage(source, messageAccumulator.ToString());
+                for (int i = 0; i < res.Count; i++)
+                {
+                    string value = res[i].InnerText;
+                    string description = res[i].ParentNode.ParentNode.Attributes["title"].Value;
+                    if(description == "Number line")
+                        continue;
+                    description = description + ":" + value;
+                    if (description.Length + messageOverhead + messageAccumulator.Length <= 480)
+                        messageAccumulator.Append(description + " | ");
+                    else
+                        break;
+                }
+
+                messageAccumulator.Replace("\n", " ");
+                messageAccumulator.Replace("\r", " ");
+
+                SendMessage(source, messageAccumulator.ToString());
+            }
+
+            
                 
         }
 

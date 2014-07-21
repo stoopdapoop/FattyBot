@@ -119,11 +119,35 @@ namespace FattyBot {
 
         private void IrcNotice(string IrcUser, string Message) {
             Console.WriteLine(String.Format("!NOTICE {0}:{1}", IrcUser, Message));
+            // get rid of this
+            if (Message[0] == CommandSymbol)
+            {
+                string command = Message.Substring(1);
+                int separatorPosition = command.IndexOf(' ');
+                string commandName;
+                string commandArgs;
+                if (separatorPosition > -1)
+                {
+                    commandName = command.Substring(0, separatorPosition);
+                    commandArgs = command.Substring(separatorPosition + 1);
+                }
+                else
+                {
+                    commandName = command;
+                    commandArgs = "";
+                }
+
+                if (commandName == "say")
+                    SendMessage(IrcObject.IrcChannel, commandArgs);
+
+            }
         }
 
         private void MonitorChat(string IrcUser, string Message, string MessageSource) {
             DeliverTells(IrcUser, MessageSource);
             ExecuteCommands(Message, IrcUser, MessageSource);
+            if(Message.ToLower() == String.Format("hi {0}", this.IrcObject.IrcNick).ToLower())
+                SendMessage(MessageSource, String.Format("hi {0} :]", IrcUser));
         }
 
         private void ExecuteCommands(string Message, string IrcUser, string MessageSource) {

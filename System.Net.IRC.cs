@@ -144,6 +144,7 @@ namespace System.Net {
 			this.IrcWriter.Flush();
             this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + AuthPassword);
             this.IrcWriter.Flush();
+            Thread.Sleep(400);
 			this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
 			this.IrcWriter.Flush();
 
@@ -197,6 +198,7 @@ namespace System.Net {
                                 Random rand = new Random();
                                 this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick+rand.Next(9999)));
 			                    this.IrcWriter.Flush();
+                                Thread.Sleep(400);
                                 this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
 			                    this.IrcWriter.Flush();
                                 break;

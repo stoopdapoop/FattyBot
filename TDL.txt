@@ -2,15 +2,11 @@ tell overflows go to
 
 serialize members
 
-allow to reconnect
-
 change help to "commands" and make help pm results
 
 .title for links
 
 http://www.dictionaryapi.com/products/api-collegiate-dictionary.htm
-
-amazon cloud hosting
 
 notice joiners tell notification
 
