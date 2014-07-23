@@ -23,6 +23,10 @@ namespace FattyBot
             public string displayLink { get; set; }
         }
 
+        private class ShortURL {
+            public string id { get; set; }
+        }
+
         private class SourceUrl
         {
             public string type { get; set; }
@@ -38,6 +42,8 @@ namespace FattyBot
         #endregion
 
         const string WolframAlphaKey = "95JE4A-XQLX9WPU99";
+        const string DictionaryKey = "e38f6db8-e792-44a6-b3ab-9acc75e9edec";
+        const string ThesaurusKey = "3ce55c4e-5f26-4cce-af61-1dff08836aa7";
 
         UserAliasesRegistry FattyUserAliases = new UserAliasesRegistry(); 
 
@@ -121,6 +127,74 @@ namespace FattyBot
 
         #endregion
 
+        private void Dictionary(string caller, string args, string source) {
+            string searchURL = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/" + args + "?key=" + DictionaryKey;
+            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
+            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
+            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(reader);
+            StringBuilder messageAccumulator = new StringBuilder();
+            
+            var res = xmlDoc.GetElementsByTagName("entry");
+            if (res.Count == 1) {
+                messageAccumulator.Append("1 result for ");
+                string candidateMessage = res[0].Attributes["id"].Value + " ";
+                var chldrn = res[0].ChildNodes;
+                foreach (XmlNode chld in chldrn) {
+                    if (chld.Name == "def") {
+                        var defnodes = chld.ChildNodes;
+                        foreach (XmlNode def in defnodes) {
+                            if (def.Name == "dt") {
+                                candidateMessage += def.InnerText;
+                                if (!TryAppend(messageAccumulator, candidateMessage, source)) {
+                                    break;
+                                }                               
+                            }
+                        }
+                    }
+                }                
+            }
+            else if (res.Count > 1) {
+                messageAccumulator.Append(res.Count + " results. Too many to list here, so here's a link: http://www.merriam-webster.com/dictionary/" + args);
+            }
+            else {
+                res = xmlDoc.GetElementsByTagName("suggestion");
+
+                messageAccumulator.Append("No results found. Did you mean: ");
+                foreach (XmlNode nd in res) {
+                    if (!TryAppend(messageAccumulator, nd.InnerText + "|", source))
+                        break;                    
+                }
+                messageAccumulator.Remove(messageAccumulator.Length - 2, 1);
+                messageAccumulator.Append("?");
+            }
+
+            SendMessage(source, messageAccumulator.ToString());
+        }
+
+        private void GetShortURL(string caller, string args, string source) {
+            string searchURL = "https://www.googleapis.com/urlshortener/v1/url?key=" + GoogleAPIKey;
+
+            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
+
+            ASCIIEncoding encoder = new ASCIIEncoding();
+            string pls = JsonConvert.SerializeObject(new { longUrl = args } );
+            byte[] data = encoder.GetBytes(pls);
+
+            searchRequest.ContentType = "application/json";
+            searchRequest.ContentLength = data.Length;
+            searchRequest.Expect = "application/json";
+            searchRequest.Method = "POST";
+            searchRequest.GetRequestStream().Write(data, 0, data.Length);
+            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
+            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
+
+            ShortURL temp = JsonConvert.DeserializeObject<ShortURL>(reader.ReadToEnd());
+
+            SendMessage(source, temp.id);            
+        }
+
         private void Math(string caller, string args, string source)
         {
             string searchURL = "http://api.wolframalpha.com/v2/query?input=" + args + "&appid=" + WolframAlphaKey;
@@ -186,6 +260,7 @@ namespace FattyBot
                 SendMessage(source, messageAccumulator.ToString());
             }          
         }
+
 
         private void DisplayUserAliases(string alias, string source, string args) {
             StringBuilder sb = new StringBuilder();
@@ -304,6 +379,13 @@ namespace FattyBot
         private int GetMessageOverhead( string source)
         {
             return  String.Format("PRIVMSG {0} :", source).Length;
+        }
+
+        private bool TryAppend(StringBuilder sb, string message, string source) {
+            if (sb.Length + message.Length + GetMessageOverhead(source) >= 480)
+                return false;
+            sb.Append(message);
+            return true;
         }
 
     }

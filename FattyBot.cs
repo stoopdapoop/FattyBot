@@ -62,6 +62,8 @@ namespace FattyBot {
             Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
             Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(Math), "queries Wolfram alpha"));
             Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
+            Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(Dictionary), "dictionary definitions"));
+            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GetShortURL), "Shortens URL"));
 			
 			// Connect to server
 			IrcObject.Connect(IrcServer, IrcPort, "poopie");
@@ -207,7 +209,7 @@ namespace FattyBot {
         private void SendMessage(string sendTo, string message)
         {
             string outputMessage = String.Format("PRIVMSG {0} :{1}", sendTo, message);
-            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0 ,800);
+            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0 ,500);
             TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;
             if (TimeSinceLastMessageSent < SendInterval)
                 Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
