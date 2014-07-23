@@ -85,6 +85,8 @@ namespace System.Net {
 			get { return this.ircChannel; }
 			set { this.ircChannel = value; }
 		} /* IrcChannel */
+
+        public string AuthPassword { get; set; }
 		
 		public bool IsInvisble {
 			get { return this.isInvisible; }
@@ -126,6 +128,7 @@ namespace System.Net {
 		public void Connect(string IrcServer, int IrcPort, string AuthPassword) {
 			this.IrcServer = IrcServer;
 			this.IrcPort = IrcPort;
+            this.AuthPassword = AuthPassword;
 
 			// Connect with the IRC server.
 			this.IrcConnection = new TcpClient(this.IrcServer, this.IrcPort);
@@ -150,11 +153,7 @@ namespace System.Net {
 
 			// Listen for commands
 			while (true) {
-                ListenForCommands();
-							
-				this.IrcWriter.Close();
-				this.IrcReader.Close();
-				this.IrcConnection.Close();
+                ListenForCommands();			
 			}
 		} /* Connect */
 
@@ -162,13 +161,28 @@ namespace System.Net {
         {
             try
             {
+                //todo: function this, yo
                 if(!this.IrcConnection.Connected)
                 {
                     Thread.Sleep(5000);
                     this.IrcConnection = new TcpClient(this.IrcServer, this.IrcPort);
 			        this.IrcStream = this.IrcConnection.GetStream();
 			        this.IrcReader = new StreamReader(this.IrcStream);
-			        this.IrcWriter = new StreamWriter(this.IrcStream);
+                    this.IrcWriter = new StreamWriter(this.IrcStream);
+
+                    Console.WriteLine("Connected to {0}", ircServer);
+
+                    // Authenticate our user
+                    string isInvisible = this.IsInvisble ? "8" : "0";
+                    this.IrcWriter.WriteLine(String.Format("USER {0} {1} * :{2}", this.IrcUser, isInvisible, this.IrcRealName));
+                    this.IrcWriter.Flush();
+                    this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
+                    this.IrcWriter.Flush();
+                    this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + AuthPassword);
+                    this.IrcWriter.Flush();
+                    Thread.Sleep(400);
+                    this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
+                    this.IrcWriter.Flush();
                 }
 
                 string ircCommand;

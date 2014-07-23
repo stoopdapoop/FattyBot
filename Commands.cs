@@ -175,19 +175,16 @@ namespace FattyBot
                         continue;
                     description = description + ":" + value;
                     if (description.Length + messageOverhead + messageAccumulator.Length <= 480)
-                        messageAccumulator.Append(description + " | ");
+                        messageAccumulator.Append(description + " / ");
                     else
                         break;
                 }
-
+                messageAccumulator.Remove(messageAccumulator.Length - 2, 1);
                 messageAccumulator.Replace("\n", " ");
                 messageAccumulator.Replace("\r", " ");
 
                 SendMessage(source, messageAccumulator.ToString());
-            }
-
-            
-                
+            }          
         }
 
         private void DisplayUserAliases(string alias, string source, string args) {
@@ -249,9 +246,9 @@ namespace FattyBot
             StringBuilder messageAccumulator = new StringBuilder();
             int i = 0;
             int messageOverhead = GetMessageOverhead(source);
-            while (i < 10)
+            while (i < 10 && results.items != null  && i < results.items.Length)
             {
-                if (results.items != null && results.items.Length >= i)
+                if ( results.items.Length >= i)
                 {
                     StringBuilder resultAccumulator = new StringBuilder();
                     GoogleSearchItem resultIterator = results.items[i++];

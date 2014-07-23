@@ -53,6 +53,7 @@ namespace FattyBot {
             IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
             IrcObject.eventNotice += new Notice(IrcNotice);
 
+            Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Really just calls 'commands' command"));
             Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
             Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));
             Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(Google), "Google search"));
