@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Threading.Tasks;
+using System.Web;
 using Newtonsoft.Json;
 using System.Net;
 using System.IO;
@@ -139,7 +140,7 @@ namespace FattyBot
             var res = xmlDoc.GetElementsByTagName("entry");
             if (res.Count == 1) {
                 messageAccumulator.Append("1 result for ");
-                string candidateMessage = res[0].Attributes["id"].Value + " ";
+                string candidateMessage = res[0].Attributes["id"].Value;
                 var chldrn = res[0].ChildNodes;
                 foreach (XmlNode chld in chldrn) {
                     if (chld.Name == "def") {
@@ -195,11 +196,43 @@ namespace FattyBot
             SendMessage(source, temp.id);            
         }
 
+        static List<DateTime> RecentMathInvocations = new List<DateTime>();
+
+        private void MathLimit(string caller, string args, string source) {
+            //cull old messages
+            TimeSpan anHour = new TimeSpan(1, 0, 0);
+            for (int i = RecentMathInvocations.Count - 1; i >= 0; --i) {
+                if ((DateTime.Now - RecentMathInvocations[i]) > anHour)
+                    RecentMathInvocations.RemoveAt(i);
+
+            }
+
+            SendMessage(source, String.Format("{0} wolfram invocations have been made in the past hour. {1} left.", RecentMathInvocations.Count, 30 - RecentMathInvocations.Count));
+        }
+
         private void Math(string caller, string args, string source)
         {
-            string searchURL = "http://api.wolframalpha.com/v2/query?input=" + args + "&appid=" + WolframAlphaKey;
 
+            //cull old messages
+            TimeSpan anHour = new TimeSpan(1, 0, 0);
+            for (int i = RecentMathInvocations.Count - 1; i >= 0; --i) {
+                if ((DateTime.Now - RecentMathInvocations[i]) > anHour)
+                    RecentMathInvocations.RemoveAt(i);
+
+            }
+
+            if (RecentMathInvocations.Count > 30) {
+                TimeSpan nextInvoke = anHour - (DateTime.Now - RecentMathInvocations[0]);
+                SendMessage(source, String.Format("Sorry {0}, rate limit on this command exceeded, you can use it again in {2} minutes", caller, nextInvoke.Minutes));
+                return;
+            }
+
+            args = args.Replace("+", "%2B");
+            string searchURL = "http://api.wolframalpha.com/v2/query?input=" + args + "&appid=" + WolframAlphaKey;
+            //Uri search = new Uri(searchURL);
+            //searchURL = HttpUtility.UrlEncode(search.AbsoluteUri);
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
+            //string butts = searchRequest.RequestUri.IsWellFormedOriginalString();
             HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
             StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
 
@@ -240,7 +273,7 @@ namespace FattyBot
             else
             {
                 res = xmlDoc.GetElementsByTagName("plaintext");
-
+                
                 for (int i = 0; i < res.Count; i++)
                 {
                     string value = res[i].InnerText;
@@ -258,9 +291,18 @@ namespace FattyBot
                 messageAccumulator.Replace("\r", " ");
 
                 SendMessage(source, messageAccumulator.ToString());
-            }          
+            }
+
+            RecentMathInvocations.Add(DateTime.Now);
         }
 
+        DateTime GagTime = DateTime.Now - new TimeSpan(5, 5, 5);
+        string Gagger;
+        private void Shutup(String caller, String args, string source) {
+            Gagger = caller;
+            GagTime = DateTime.Now;
+            SendMessage(source, String.Format("Alright {0}, I'll be quiet for you for the next 5 minutes.  I know how you hate fun and all.", caller));
+        }
 
         private void DisplayUserAliases(string alias, string source, string args) {
             StringBuilder sb = new StringBuilder();
