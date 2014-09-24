@@ -54,6 +54,7 @@ namespace FattyBot {
             IrcObject.eventNotice += new Notice(IrcNotice);
 
             Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Just calls 'commands'"));
+            Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(Acronym), "Defines given acronym"));
             Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
             Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));
             Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(Google), "Google search"));
@@ -66,7 +67,7 @@ namespace FattyBot {
             Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GetShortURL), "Shortens URL"));
             Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(MathLimit), "Remaining wolfram calls this hour"));
             Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
-			
+            	
 			// Connect to server
 			IrcObject.Connect(IrcServer, IrcPort, "poopie");
 		} 

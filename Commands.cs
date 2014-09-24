@@ -46,6 +46,9 @@ namespace FattyBot
         const string DictionaryKey = "e38f6db8-e792-44a6-b3ab-9acc75e9edec";
         const string ThesaurusKey = "3ce55c4e-5f26-4cce-af61-1dff08836aa7";
 
+        const string AcronymUserID = "3492";
+        const string AcronymTokenID = "lVM1lpRT2RHxUFRT";
+
         UserAliasesRegistry FattyUserAliases = new UserAliasesRegistry(); 
 
         private void ListCommands(string caller, string args, string source)
@@ -84,6 +87,40 @@ namespace FattyBot
             }
         }
 
+        static int maxResultsToDisplay = 10;
+        private void Acronym(string caller, string args, string source) {
+            string searchURL = "http://www.stands4.com/services/v2/abbr.php?uid=" +AcronymUserID + "&tokenid=" + AcronymTokenID;
+            searchURL += "&term=" + args;
+            // this is for exact lookup, so I don't have to display results in an intelligent manner
+            searchURL += "&searchtype=e";
+
+            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
+            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
+            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(reader);
+            StringBuilder messageAccumulator = new StringBuilder();
+
+            var res = xmlDoc.GetElementsByTagName("result");
+            int outputCount = 0;
+            foreach (XmlNode elem in res) {
+                var childRes = elem.ChildNodes;
+                foreach (XmlNode child in childRes) {
+                    if(child.Name != "definition")
+                        continue;
+                    string def = child.InnerText;
+                    //iterate through rest of entries, even though there's no point, saves code.
+                    if(outputCount >= maxResultsToDisplay ||!TryAppend(messageAccumulator, def + " | ", source))
+                        break;
+                    ++outputCount;
+                }
+            }
+
+            if (res.Count < 1)
+                messageAccumulator.Append("No results for: " + args);
+            SendMessage(source, messageAccumulator.ToString());
+        }
+
         private void Tell(string caller, string args, string source)
         {
             var parts = args.Split(' ');
@@ -117,15 +154,12 @@ namespace FattyBot
         readonly string[] EightBallResponses = { "It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", 
                              "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy, try again", "Try again later", "Better not tell you now", 
                              "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
-
         private void EightBall(string caller, string args, string source)
         {
             Random rand = new Random();
 
             SendMessage(source, String.Format("{0}: {1}", caller, EightBallResponses[rand.Next(EightBallResponses.Length)]));
         }
-
-
         #endregion
 
         private void Dictionary(string caller, string args, string source) {
