@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 // associated with an assembly.
 //
 [assembly: AssemblyTitle("FattyBot")]
-[assembly: AssemblyDescription("Console IRC Bot")]
+[assembly: AssemblyDescription("The Best Irc Bot")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("http://www.tri4.net/brown")]
 [assembly: AssemblyProduct("")]
