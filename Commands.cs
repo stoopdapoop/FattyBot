@@ -9,15 +9,12 @@ using Newtonsoft.Json;
 using System.Net;
 using System.IO;
 
-namespace FattyBot
-{
-    partial class FattyBot
-    {
+namespace FattyBot {
+    partial class FattyBot {
 
         #region GoogleStructs
         const string GoogleAPIKey = "AIzaSyDniQGV3voKW5ZSrqWfiXgnWz-2AX6xNBo";
-        private class GoogleSearchItem
-        {
+        private class GoogleSearchItem {
             public string kind { get; set; }
             public string title { get; set; }
             public string link { get; set; }
@@ -28,14 +25,12 @@ namespace FattyBot
             public string id { get; set; }
         }
 
-        private class SourceUrl
-        {
+        private class SourceUrl {
             public string type { get; set; }
             public string template { get; set; }
         }
 
-        private class GoogleSearchResults
-        {
+        private class GoogleSearchResults {
             public string kind { get; set; }
             public SourceUrl url { get; set; }
             public GoogleSearchItem[] items { get; set; }
@@ -46,50 +41,44 @@ namespace FattyBot
         const string DictionaryKey = "e38f6db8-e792-44a6-b3ab-9acc75e9edec";
         const string ThesaurusKey = "3ce55c4e-5f26-4cce-af61-1dff08836aa7";
 
-        const string AcronymUserID = "3492";
-        const string AcronymTokenID = "lVM1lpRT2RHxUFRT";
+        const string Stands4UserID = "3492";
+        const string Stands4TokenID = "lVM1lpRT2RHxUFRT";
 
-        UserAliasesRegistry FattyUserAliases = new UserAliasesRegistry(); 
+        UserAliasesRegistry FattyUserAliases = new UserAliasesRegistry();
 
-        private void ListCommands(string caller, string args, string source)
-        {
+        private void ListCommands(string caller, string args, string source) {
             StringBuilder availableMethodNames = new StringBuilder();
-            foreach (KeyValuePair<string, Tuple<CommandMethod, string>> mthd in Commands)
-            {
-                availableMethodNames.Append(CommandSymbol+mthd.Key);
+            foreach (KeyValuePair<string, Tuple<CommandMethod, string>> mthd in Commands) {
+                availableMethodNames.Append(CommandSymbol + mthd.Key);
                 availableMethodNames.Append(":" + mthd.Value.Item2 + ", ");
             }
             availableMethodNames.Remove(availableMethodNames.Length - 2, 1);
             SendMessage(source, availableMethodNames.ToString());
         }
 
-        private void Seen(string caller, string args, string source)
-        {
+        private void Seen(string caller, string args, string source) {
             Tuple<DateTime, String> lastSeentEntry;
-            
+
             bool userSeen = SeenList.TryGetValue(args, out lastSeentEntry);
-            
-            if (userSeen)
-            {
+
+            if (userSeen) {
                 DateTime lastSeentTime = lastSeentEntry.Item1;
                 TimeSpan lastSeenSpan = DateTime.Now - lastSeentTime;
                 string prettyTime = GetPrettyTime(lastSeenSpan);
-                
+
                 if (caller == args)
                     SendMessage(source, String.Format("You were last seen (before this command) {0} on {1}. {2} ago. \"{3}\"", args, lastSeentTime, prettyTime, lastSeentEntry.Item2));
                 else
                     SendMessage(source, String.Format("Last seen {0} on {1}. {2} ago. \"{3}\"", args, lastSeentTime, prettyTime, lastSeentEntry.Item2));
-
             }
-            else
-            {
+            else {
                 SendMessage(source, String.Format("Haven't ever seen \"{0}\" around", args));
             }
         }
 
         static int maxResultsToDisplay = 10;
         private void Acronym(string caller, string args, string source) {
-            string searchURL = "http://www.stands4.com/services/v2/abbr.php?uid=" +AcronymUserID + "&tokenid=" + AcronymTokenID;
+            string searchURL = "http://www.stands4.com/services/v2/abbr.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
             searchURL += "&term=" + args;
             // this is for exact lookup, so I don't have to display results in an intelligent manner
             searchURL += "&searchtype=e";
@@ -106,11 +95,11 @@ namespace FattyBot
             foreach (XmlNode elem in res) {
                 var childRes = elem.ChildNodes;
                 foreach (XmlNode child in childRes) {
-                    if(child.Name != "definition")
+                    if (child.Name != "definition")
                         continue;
                     string def = child.InnerText;
                     //iterate through rest of entries, even though there's no point, saves code.
-                    if(outputCount >= maxResultsToDisplay ||!TryAppend(messageAccumulator, def + " | ", source))
+                    if (outputCount >= maxResultsToDisplay || !TryAppend(messageAccumulator, def + " | ", source))
                         break;
                     ++outputCount;
                 }
@@ -121,12 +110,11 @@ namespace FattyBot
             SendMessage(source, messageAccumulator.ToString());
         }
 
-        private void Tell(string caller, string args, string source)
-        {
+        private void Tell(string caller, string args, string source) {
             var parts = args.Split(' ');
             var recipients = parts[0].Split(',');
-            string msg = String.Join(" ", parts, 1, parts.Length-1);
-            foreach(var recip in recipients) {
+            string msg = String.Join(" ", parts, 1, parts.Length - 1);
+            foreach (var recip in recipients) {
                 if (recip == IrcObject.IrcNick) {
                     SendMessage(source, "xD");
                     continue;
@@ -154,8 +142,7 @@ namespace FattyBot
         readonly string[] EightBallResponses = { "It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", 
                              "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy, try again", "Try again later", "Better not tell you now", 
                              "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
-        private void EightBall(string caller, string args, string source)
-        {
+        private void EightBall(string caller, string args, string source) {
             Random rand = new Random();
 
             SendMessage(source, String.Format("{0}: {1}", caller, EightBallResponses[rand.Next(EightBallResponses.Length)]));
@@ -170,7 +157,7 @@ namespace FattyBot
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(reader);
             StringBuilder messageAccumulator = new StringBuilder();
-            
+
             var res = xmlDoc.GetElementsByTagName("entry");
             if (res.Count == 1) {
                 messageAccumulator.Append("1 result for ");
@@ -184,11 +171,11 @@ namespace FattyBot
                                 candidateMessage += def.InnerText;
                                 if (!TryAppend(messageAccumulator, candidateMessage, source)) {
                                     break;
-                                }                               
+                                }
                             }
                         }
                     }
-                }                
+                }
             }
             else if (res.Count > 1) {
                 messageAccumulator.Append(res.Count + " results. Too many to list here, so here's a link: http://www.merriam-webster.com/dictionary/" + args);
@@ -199,7 +186,7 @@ namespace FattyBot
                 messageAccumulator.Append("No results found. Did you mean: ");
                 foreach (XmlNode nd in res) {
                     if (!TryAppend(messageAccumulator, nd.InnerText + "|", source))
-                        break;                    
+                        break;
                 }
                 messageAccumulator.Remove(messageAccumulator.Length - 2, 1);
                 messageAccumulator.Append("?");
@@ -214,7 +201,7 @@ namespace FattyBot
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
 
             ASCIIEncoding encoder = new ASCIIEncoding();
-            string pls = JsonConvert.SerializeObject(new { longUrl = args } );
+            string pls = JsonConvert.SerializeObject(new { longUrl = args });
             byte[] data = encoder.GetBytes(pls);
 
             searchRequest.ContentType = "application/json";
@@ -227,7 +214,7 @@ namespace FattyBot
 
             ShortURL temp = JsonConvert.DeserializeObject<ShortURL>(reader.ReadToEnd());
 
-            SendMessage(source, temp.id);            
+            SendMessage(source, temp.id);
         }
 
         static List<DateTime> RecentMathInvocations = new List<DateTime>();
@@ -244,8 +231,7 @@ namespace FattyBot
             SendMessage(source, String.Format("{0} wolfram invocations have been made in the past hour. {1} left.", RecentMathInvocations.Count, 30 - RecentMathInvocations.Count));
         }
 
-        private void Math(string caller, string args, string source)
-        {
+        private void Math(string caller, string args, string source) {
 
             //cull old messages
             TimeSpan anHour = new TimeSpan(1, 0, 0);
@@ -277,12 +263,10 @@ namespace FattyBot
 
 
             XmlNodeList res = xmlDoc.GetElementsByTagName("queryresult");
-            if (res[0].Attributes["success"].Value == "false")
-            {
+            if (res[0].Attributes["success"].Value == "false") {
                 messageAccumulator.Append("Query failed: ");
                 res = xmlDoc.GetElementsByTagName("tip");
-                for (int i = 0; i < res.Count; i++)
-                {
+                for (int i = 0; i < res.Count; i++) {
                     string desc = res[i].InnerText;
                     if (desc.Length + messageOverhead + messageAccumulator.Length <= 480)
                         messageAccumulator.Append(desc + ". ");
@@ -290,11 +274,10 @@ namespace FattyBot
                         break;
                 }
                 res = xmlDoc.GetElementsByTagName("didyoumean");
-                
-                for (int i = 0; i < res.Count; i++)
-                {
+
+                for (int i = 0; i < res.Count; i++) {
                     string desc = "";
-                    if(i==0)
+                    if (i == 0)
                         desc += "Did you mean: ";
                     desc += res[i].InnerText + " ? ";
                     if (desc.Length + messageOverhead + messageAccumulator.Length <= 480)
@@ -304,15 +287,13 @@ namespace FattyBot
                 }
                 SendMessage(source, messageAccumulator.ToString());
             }
-            else
-            {
+            else {
                 res = xmlDoc.GetElementsByTagName("plaintext");
-                
-                for (int i = 0; i < res.Count; i++)
-                {
+
+                for (int i = 0; i < res.Count; i++) {
                     string value = res[i].InnerText;
                     string description = res[i].ParentNode.ParentNode.Attributes["title"].Value;
-                    if(description == "Number line")
+                    if (description == "Number line")
                         continue;
                     description = description + ":" + value;
                     if (description.Length + messageOverhead + messageAccumulator.Length <= 480)
@@ -372,22 +353,19 @@ namespace FattyBot
             }
         }
 
-        private void Google(string caller, string args, string source)
-        {
+        private void Google(string caller, string args, string source) {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&q=";
             searchURL += args;
             GoogleAPIPrinter(searchURL, source);
         }
 
-        private void GoogleImageSearch(String caller, String args, string source)
-        {
+        private void GoogleImageSearch(String caller, String args, string source) {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&searchType=image&q=";
             searchURL += args;
             GoogleAPIPrinter(searchURL, source);
         }
 
-        private void GoogleAPIPrinter(string searchURL, string source)
-        {
+        private void GoogleAPIPrinter(string searchURL, string source) {
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
             HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
             StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
@@ -397,10 +375,8 @@ namespace FattyBot
             StringBuilder messageAccumulator = new StringBuilder();
             int i = 0;
             int messageOverhead = GetMessageOverhead(source);
-            while (i < 10 && results.items != null  && i < results.items.Length)
-            {
-                if ( results.items.Length >= i)
-                {
+            while (i < 10 && results.items != null && i < results.items.Length) {
+                if (results.items.Length >= i) {
                     StringBuilder resultAccumulator = new StringBuilder();
                     GoogleSearchItem resultIterator = results.items[i++];
                     resultAccumulator.Append(String.Format("\"{0}\"", resultIterator.title));
@@ -412,8 +388,7 @@ namespace FattyBot
                     else
                         break;
                 }
-                else
-                {
+                else {
                     break;
                 }
             }
@@ -422,39 +397,33 @@ namespace FattyBot
             else
                 SendMessage(source, messageAccumulator.ToString());
         }
-                
-        private string GetPrettyTime(TimeSpan ts)
-        {
+
+        private string GetPrettyTime(TimeSpan ts) {
             string timeLastSeen = "";
             int fieldCount = 0;
-            if (ts.Days > 0)
-            {
+            if (ts.Days > 0) {
                 timeLastSeen += String.Format("{0} day(s)", ts.Days);
                 ++fieldCount;
             }
-            if (ts.Hours > 0)
-            {
+            if (ts.Hours > 0) {
                 timeLastSeen += (fieldCount > 0 ? ", " : "");
                 timeLastSeen += String.Format("{0} hour(s)", ts.Hours);
                 ++fieldCount;
             }
-            if (ts.Minutes > 0)
-            {
+            if (ts.Minutes > 0) {
                 timeLastSeen += (fieldCount > 0 ? ", and " : "");
                 timeLastSeen += String.Format("{0} minute(s)", ts.Minutes);
                 ++fieldCount;
             }
-            if(fieldCount == 0)
-            {
+            if (fieldCount == 0) {
                 timeLastSeen = String.Format("{0} second(s)", ts.Seconds);
             }
 
             return timeLastSeen;
         }
 
-        private int GetMessageOverhead( string source)
-        {
-            return  String.Format("PRIVMSG {0} :", source).Length;
+        private int GetMessageOverhead(string source) {
+            return String.Format("PRIVMSG {0} :", source).Length;
         }
 
         private bool TryAppend(StringBuilder sb, string message, string source) {
