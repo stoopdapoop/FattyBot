@@ -13,13 +13,13 @@ namespace FattyBot {
     partial class FattyBot {
 
         private void ListCommands(string caller, string args, string source) {
-            StringBuilder availableMethodNames = new StringBuilder();
+            //StringBuilder availableMethodNames = new StringBuilder();
             foreach (KeyValuePair<string, Tuple<CommandMethod, string>> mthd in Commands) {
-                availableMethodNames.Append(CommandSymbol + mthd.Key);
-                availableMethodNames.Append(":" + mthd.Value.Item2 + ", ");
+                string ThisMessage = CommandSymbol + mthd.Key;
+                ThisMessage += " - " + mthd.Value.Item2;
+                SendNotice(caller, ThisMessage);
             }
-            availableMethodNames.Remove(availableMethodNames.Length - 2, 1);
-            SendMessage(source, availableMethodNames.ToString());
+            
         }
 
         private void Seen(string caller, string args, string source) {

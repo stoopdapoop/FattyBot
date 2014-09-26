@@ -216,16 +216,28 @@ namespace FattyBot {
 
         public static void SendMessage(string sendTo, string message) {
             string outputMessage = String.Format("PRIVMSG {0} :{1}", sendTo, message);
-            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 500);
-            TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;
-            if (TimeSinceLastMessageSent < SendInterval)
-                Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
-            IrcObject.IrcWriter.WriteLine(outputMessage);
-            IrcObject.IrcWriter.Flush();
-            TimeOfLastSentMessage = DateTime.Now;
+            InternalSend(outputMessage);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
             Console.ResetColor();
+        }
+
+        public static void SendNotice(string sendTo, string message) {
+            string outputMessage = String.Format("NOTICE {0} :{1}", sendTo, message);
+            InternalSend(outputMessage);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        private static void InternalSend(string formattedMessage) {
+            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 400);
+            TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;
+            if (TimeSinceLastMessageSent < SendInterval)
+                Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
+            IrcObject.IrcWriter.WriteLine(formattedMessage);
+            IrcObject.IrcWriter.Flush();
+            TimeOfLastSentMessage = DateTime.Now;
         }
     }
 }
