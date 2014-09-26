@@ -195,7 +195,6 @@ namespace System.Net {
             {
                 if(this.IrcConnection.Connected)
                     throw;
-                
             }
             
         }
@@ -230,7 +229,7 @@ namespace System.Net {
 		} 
 		#endregion
 		
-		#region Ping
+		#region Server Ping
 		private void IrcPing(string[] ircCommand) {
 			string pingHash = "";
 			for (int intI = 1; intI < ircCommand.Length; intI++) {
@@ -279,7 +278,7 @@ namespace System.Net {
 
             kickMessage = RejoinMessage(ircCommand, 4);
 			if (eventKick != null) { this.eventKick(ircChannel, userKicker, userKicked, kickMessage.Remove(0, 1).Trim()); }
-		} /* IrcKick */
+		}
 		
 		private void IrcQuit(string[] ircCommand) {
 			string userQuit = ircCommand[0].Split('!')[0];
@@ -287,7 +286,7 @@ namespace System.Net {
 
             quitMessage = RejoinMessage(ircCommand, 2);
 			if (eventQuit != null) { this.eventQuit(userQuit, quitMessage.Remove(0, 1).Trim()); }
-		} /* IrcQuit */
+		} 
 
         void IrcPrivateMessage(string[] ircCommand)
         {

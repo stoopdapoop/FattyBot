@@ -12,31 +12,6 @@ using System.IO;
 namespace FattyBot {
     partial class FattyBot {
 
-        #region GoogleStructs
-        const string GoogleAPIKey = "AIzaSyDniQGV3voKW5ZSrqWfiXgnWz-2AX6xNBo";
-        private class GoogleSearchItem {
-            public string kind { get; set; }
-            public string title { get; set; }
-            public string link { get; set; }
-            public string displayLink { get; set; }
-        }
-
-        private class ShortURL {
-            public string id { get; set; }
-        }
-
-        private class SourceUrl {
-            public string type { get; set; }
-            public string template { get; set; }
-        }
-
-        private class GoogleSearchResults {
-            public string kind { get; set; }
-            public SourceUrl url { get; set; }
-            public GoogleSearchItem[] items { get; set; }
-        }
-        #endregion
-
         const string WolframAlphaKey = "95JE4A-XQLX9WPU99";
         const string DictionaryKey = "e38f6db8-e792-44a6-b3ab-9acc75e9edec";
         const string ThesaurusKey = "3ce55c4e-5f26-4cce-af61-1dff08836aa7";
@@ -88,6 +63,16 @@ namespace FattyBot {
             StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(reader);
+
+            var errs = xmlDoc.GetElementsByTagName("error");
+            if (errs.Count > 0) {
+                string errorText = errs[0].InnerText;
+                for (int i = 1; i < errs.Count; ++i)
+                    errorText += " | " + errorText;
+                SendMessage(source, String.Format("Errors returned: {0}", errorText));
+                return;
+            }
+
             StringBuilder messageAccumulator = new StringBuilder();
 
             var res = xmlDoc.GetElementsByTagName("result");
@@ -193,28 +178,6 @@ namespace FattyBot {
             }
 
             SendMessage(source, messageAccumulator.ToString());
-        }
-
-        private void GetShortURL(string caller, string args, string source) {
-            string searchURL = "https://www.googleapis.com/urlshortener/v1/url?key=" + GoogleAPIKey;
-
-            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
-
-            ASCIIEncoding encoder = new ASCIIEncoding();
-            string pls = JsonConvert.SerializeObject(new { longUrl = args });
-            byte[] data = encoder.GetBytes(pls);
-
-            searchRequest.ContentType = "application/json";
-            searchRequest.ContentLength = data.Length;
-            searchRequest.Expect = "application/json";
-            searchRequest.Method = "POST";
-            searchRequest.GetRequestStream().Write(data, 0, data.Length);
-            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
-            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
-
-            ShortURL temp = JsonConvert.DeserializeObject<ShortURL>(reader.ReadToEnd());
-
-            SendMessage(source, temp.id);
         }
 
         static List<DateTime> RecentMathInvocations = new List<DateTime>();
@@ -349,51 +312,6 @@ namespace FattyBot {
             }
         }
 
-        private void Google(string caller, string args, string source) {
-            string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&q=";
-            searchURL += args;
-            GoogleAPIPrinter(searchURL, source);
-        }
-
-        private void GoogleImageSearch(String caller, String args, string source) {
-            string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=016968405084681006944:ksw5ydltpt0&searchType=image&q=";
-            searchURL += args;
-            GoogleAPIPrinter(searchURL, source);
-        }
-
-        private void GoogleAPIPrinter(string searchURL, string source) {
-            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
-            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
-            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
-            String data = reader.ReadToEnd();
-
-            GoogleSearchResults results = JsonConvert.DeserializeObject<GoogleSearchResults>(data);
-            StringBuilder messageAccumulator = new StringBuilder();
-            int i = 0;
-            int messageOverhead = GetMessageOverhead(source);
-            while (i < 10 && results.items != null && i < results.items.Length) {
-                if (results.items.Length >= i) {
-                    StringBuilder resultAccumulator = new StringBuilder();
-                    GoogleSearchItem resultIterator = results.items[i++];
-                    resultAccumulator.Append(String.Format("\"{0}\"", resultIterator.title));
-                    resultAccumulator.Append(" - ");
-                    resultAccumulator.Append(String.Format("\x02{0}\x02", resultIterator.link));
-                    resultAccumulator.Append(@" 4| ");
-                    if (messageAccumulator.Length + resultAccumulator.Length + messageOverhead <= 480)
-                        messageAccumulator.Append(resultAccumulator);
-                    else
-                        break;
-                }
-                else {
-                    break;
-                }
-            }
-            if (messageAccumulator.Length == 0)
-                SendMessage(source, "No Results Found");
-            else
-                SendMessage(source, messageAccumulator.ToString());
-        }
-
         private string GetPrettyTime(TimeSpan ts) {
             string timeLastSeen = "";
             int fieldCount = 0;
@@ -418,7 +336,7 @@ namespace FattyBot {
             return timeLastSeen;
         }
 
-        private int GetMessageOverhead(string source) {
+        static public int GetMessageOverhead(string source) {
             return String.Format("PRIVMSG {0} :", source).Length;
         }
 

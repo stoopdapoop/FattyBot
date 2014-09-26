@@ -6,10 +6,11 @@ using System.Threading;
 
 namespace FattyBot {
     partial class FattyBot {
-        private IRC IrcObject;
+        private static IRC IrcObject;
         private const char CommandSymbol = '.';
         private Dictionary<string, Tuple<CommandMethod, string>> Commands = new Dictionary<string, Tuple<CommandMethod, string>>();
         private TellManager FattyTellManager;
+        private GoogleAPI GoogleInterface = new GoogleAPI();
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
         static DateTime TimeOfLastSentMessage = DateTime.Now;
         private delegate void CommandMethod(string caller, string args, string source);
@@ -55,14 +56,14 @@ namespace FattyBot {
             Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(Acronym), "Defines given acronym"));
             Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
             Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));
-            Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(Google), "Google search"));
-            Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(GoogleImageSearch), "Google image search"));
+            Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.Google), "Google search"));
+            Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GoogleImageSearch), "Google image search"));
             Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(Alias), "Assigns nicknames to people"));
             Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
             Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(Math), "Wolfram alpha"));
             Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
             Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(Dictionary), "dictionary definitions"));
-            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GetShortURL), "Shortens URL"));
+            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GetShortURL), "Shortens URL"));
             Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(MathLimit), "Remaining wolfram calls this hour"));
             Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
 
@@ -142,7 +143,7 @@ namespace FattyBot {
             DeliverTells(ircUser, messageSource);
 
             ExecuteCommands(message, ircUser, messageSource);
-            if (message.ToLower() == String.Format("hi {0}", this.IrcObject.IrcNick).ToLower())
+            if (message.ToLower() == String.Format("hi {0}", IrcObject.IrcNick).ToLower())
                 SendMessage(messageSource, String.Format("hi {0} :]", ircUser));
 
         }
@@ -203,7 +204,7 @@ namespace FattyBot {
             }
         }
 
-        private void SendMessage(string sendTo, string message) {
+        public static void SendMessage(string sendTo, string message) {
             string outputMessage = String.Format("PRIVMSG {0} :{1}", sendTo, message);
             TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 500);
             TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;

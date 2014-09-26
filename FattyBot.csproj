@@ -150,6 +150,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands.cs" />
+    <Compile Include="GoogleAPI.cs" />
     <Compile Include="System.Net.IRC.cs">
       <SubType>Code</SubType>
     </Compile>
