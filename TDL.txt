@@ -1,8 +1,8 @@
+REJOIN REJOIN REJOIN
+
 tell overflows go to 
 
 serialize members
-
-change help to "commands" and make help pm results
 
 .title for links
 
@@ -15,3 +15,5 @@ make seen work with aliases
 Make sendmessage defer message to sendnotice when fatty is gagged.
 
 create class for each message that contains all relevant info, and pass class around instead of strings
+
+implement channel joining and leaving
