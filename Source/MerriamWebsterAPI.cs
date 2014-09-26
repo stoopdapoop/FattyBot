@@ -40,7 +40,7 @@ namespace FattyBot {
                         var defnodes = chld.ChildNodes;
                         foreach (XmlNode def in defnodes) {
                             if (def.Name == "dt") {
-                                candidateMessage += def.InnerText;
+                                candidateMessage += def.InnerText + " | ";
                                 if (!FattyBot.TryAppend(messageAccumulator, candidateMessage, source, shortUrl.Length + 2)) {
                                     break;
                                 }
