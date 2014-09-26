@@ -155,6 +155,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="TellManager.cs" />
+    <Compile Include="WolframAPI.cs" />
     <Content Include="App.ico" />
     <Content Include="TDL.txt" />
   </ItemGroup>

@@ -10,10 +10,13 @@ namespace FattyBot {
         private const char CommandSymbol = '.';
         private Dictionary<string, Tuple<CommandMethod, string>> Commands = new Dictionary<string, Tuple<CommandMethod, string>>();
         private TellManager FattyTellManager;
-        private GoogleAPI GoogleInterface = new GoogleAPI();
+        
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
         static DateTime TimeOfLastSentMessage = DateTime.Now;
         private delegate void CommandMethod(string caller, string args, string source);
+
+        private GoogleAPI GoogleInterface = new GoogleAPI();
+        private WolframAPI WolframInterface = new WolframAPI();
 
         static void Main(string[] args) {
 
@@ -60,11 +63,11 @@ namespace FattyBot {
             Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GoogleImageSearch), "Google image search"));
             Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(Alias), "Assigns nicknames to people"));
             Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
-            Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(Math), "Wolfram alpha"));
+            Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.Math), "Wolfram alpha"));
+            Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.MathLimit), "Remaining wolfram calls this hour"));
             Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
             Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(Dictionary), "dictionary definitions"));
-            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GetShortURL), "Shortens URL"));
-            Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(MathLimit), "Remaining wolfram calls this hour"));
+            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GetShortURL), "Shortens URL")); 
             Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
 
             // Connect to server
