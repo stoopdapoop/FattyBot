@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace FattyBot {
     class TellManager {
         private Dictionary<string, List<Tuple<String, DateTime, String>>> TellList = new Dictionary<string, List<Tuple<String, DateTime, String>>>();
-        private UserAliasesRegistry TellAliasRegistry;
+        private AliasAPI FattyAliasApi;
 
-        public TellManager(UserAliasesRegistry aliases) {
-            TellAliasRegistry = aliases;
+        public TellManager(AliasAPI aliases) {
+            FattyAliasApi = aliases;
         }
 
         public bool GetTellsForUser(string name, out List<Tuple<String, DateTime, String>> tells) {
@@ -19,7 +19,7 @@ namespace FattyBot {
 
             UserAliasGroup TestAliasGroup;
 
-            if (TellAliasRegistry.GetAliasGroup(name, out TestAliasGroup)) {
+            if (FattyAliasApi.FattyUserAliases.GetAliasGroup(name, out TestAliasGroup)) {
                 var AliasIterator = TestAliasGroup.GetUserAliases();
                 foreach (string aliasName in AliasIterator) {
                     List<Tuple<String, DateTime, String>> thisTellList;

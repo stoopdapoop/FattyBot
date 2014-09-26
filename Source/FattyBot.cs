@@ -15,8 +15,11 @@ namespace FattyBot {
         static DateTime TimeOfLastSentMessage = DateTime.Now;
         private delegate void CommandMethod(string caller, string args, string source);
 
-        private GoogleAPI GoogleInterface = new GoogleAPI();
-        private WolframAPI WolframInterface = new WolframAPI();
+        private AliasAPI AliasInterface;
+        private GoogleAPI GoogleInterface;
+        private MerriamWebsterAPI MerriamWebsterInterface;
+        private Stands4Api Stands4Interface;
+        private WolframAPI WolframInterface;
 
         static void Main(string[] args) {
 
@@ -35,10 +38,14 @@ namespace FattyBot {
         }
 
         private FattyBot(string IrcServer, int IrcPort, string IrcUser, string IrcChan) {
-            FattyTellManager = new TellManager(FattyUserAliases);
+            GoogleInterface = new GoogleAPI();
+            WolframInterface = new WolframAPI();
+            MerriamWebsterInterface = new MerriamWebsterAPI(GoogleInterface);
+            AliasInterface = new AliasAPI();
+            FattyTellManager = new TellManager(AliasInterface);
+            Stands4Interface = new Stands4Api();
 
             IrcObject = new IRC(IrcUser, IrcChan);
-
             // Assign events
             IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
             IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
@@ -56,18 +63,18 @@ namespace FattyBot {
             IrcObject.eventNotice += new Notice(IrcNotice);
 
             Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Just calls 'commands'"));
-            Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(Acronym), "Defines given acronym"));
+            Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(Stands4Interface.Acronym), "Defines given acronym"));
             Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
             Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));
             Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.Google), "Google search"));
             Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GoogleImageSearch), "Google image search"));
-            Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(Alias), "Assigns nicknames to people"));
+            Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(AliasInterface.Alias), "Assigns nicknames to people"));
             Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
             Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.Math), "Wolfram alpha"));
             Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.MathLimit), "Remaining wolfram calls this hour"));
             Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
-            Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(Dictionary), "dictionary definitions"));
-            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GetShortURL), "Shortens URL")); 
+            Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(MerriamWebsterInterface.Dictionary), "dictionary definitions"));
+            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.URLShortener), "Shortens URL")); 
             Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
 
             // Connect to server

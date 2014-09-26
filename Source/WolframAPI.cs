@@ -7,7 +7,7 @@ using System.IO;
 
 namespace FattyBot {
     class WolframAPI {
-        const string WolframAlphaKey = "95JE4A-XQLX9WPU99";
+        private const string WolframAlphaKey = "95JE4A-XQLX9WPU99";
 
         private List<DateTime> RecentMathInvocations = new List<DateTime>();
 

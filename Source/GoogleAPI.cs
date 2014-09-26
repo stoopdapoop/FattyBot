@@ -7,9 +7,10 @@ using System.IO;
 namespace FattyBot {
     class GoogleAPI {
 
+        private const string GoogleAPIKey = "AIzaSyDniQGV3voKW5ZSrqWfiXgnWz-2AX6xNBo";
+        private const string GoogleCustomSearchID = "016968405084681006944:ksw5ydltpt0";
+       
         #region GoogleStructs
-        const string GoogleAPIKey = "AIzaSyDniQGV3voKW5ZSrqWfiXgnWz-2AX6xNBo";
-        const string GoogleCustomSearchID = "016968405084681006944:ksw5ydltpt0";
         private class GoogleSearchItem {
             public string kind { get; set; }
             public string title { get; set; }
@@ -50,13 +51,20 @@ namespace FattyBot {
             GoogleAPIPrinter(searchURL, source);
         }
 
-        public void GetShortURL(string caller, string args, string source) {
+        public void URLShortener(string caller, string args, string source) {
+
+            string shortURL = GetShortURL(args);
+
+            FattyBot.SendMessage(source, shortURL);
+        }
+
+        public string GetShortURL(string longURL) {
             string searchURL = "https://www.googleapis.com/urlshortener/v1/url?key=" + GoogleAPIKey;
 
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
 
             ASCIIEncoding encoder = new ASCIIEncoding();
-            string pls = JsonConvert.SerializeObject(new { longUrl = args });
+            string pls = JsonConvert.SerializeObject(new { longUrl = longURL });
             byte[] data = encoder.GetBytes(pls);
 
             searchRequest.ContentType = "application/json";
@@ -69,7 +77,7 @@ namespace FattyBot {
 
             ShortURL temp = JsonConvert.DeserializeObject<ShortURL>(reader.ReadToEnd());
 
-            FattyBot.SendMessage(source, temp.id);
+            return temp.id;
         }
         #endregion
 

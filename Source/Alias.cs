@@ -5,6 +5,64 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace FattyBot {
+
+    public class AliasAPI
+    {
+        public UserAliasesRegistry FattyUserAliases;
+
+        public AliasAPI()
+        {
+            FattyUserAliases = new UserAliasesRegistry();
+        }
+
+        public void Alias(string caller, string args, string source) {
+            args = args.Trim();
+            var argParts = args.Split(' ');
+
+            if (argParts.Length == 3)
+                PerformAliasOperation(argParts, source);
+            else if (argParts.Length == 1)
+                DisplayUserAliases(argParts[0], source, args);
+            else
+                FattyBot.SendMessage(source, "Not the right number of inputs");
+        }
+
+        private void DisplayUserAliases(string alias, string source, string args) {
+            StringBuilder sb = new StringBuilder();
+            UserAliasGroup ag;
+            if (FattyUserAliases.GetAliasGroup(alias, out ag)) {
+                var names = ag.GetUserAliases();
+                foreach (string name in names) {
+                    sb.Append(name + " ");
+                }
+                FattyBot.SendMessage(source, sb.ToString());
+            }
+            else {
+                FattyBot.SendMessage(source, String.Format("No results found for {0}", args));
+            }
+        }
+
+        private void PerformAliasOperation(string[] argParts, string source) {
+            if (argParts.Length < 3)
+                FattyBot.SendMessage(source, "error parsing arguments");
+            string operation = argParts[0];
+            string firstName = argParts[1];
+            string secondName = argParts[2];
+            switch (operation) {
+                case "add":
+                    FattyBot.SendMessage(source, FattyUserAliases.AddAlias(firstName, secondName));
+                    break;
+                case "remove":
+                    FattyBot.SendMessage(source, FattyUserAliases.RemoveAlias(firstName, secondName));
+                    break;
+                default:
+                    FattyBot.SendMessage(source, String.Format("{0} is an unknown operation, try 'add' or 'remove'", operation));
+                    break;
+            }
+        }
+
+    }
+    
     public class UserAliasesRegistry {
             private Dictionary<string, UserAliasGroup> AliasRegistry = new Dictionary<string, UserAliasGroup>();
 

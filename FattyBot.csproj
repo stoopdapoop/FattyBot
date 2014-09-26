@@ -142,20 +142,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Alias.cs" />
+    <Compile Include="Source\Alias.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FattyBot.cs">
+    <Compile Include="Source\FattyBot.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands.cs" />
-    <Compile Include="GoogleAPI.cs" />
-    <Compile Include="System.Net.IRC.cs">
+    <Compile Include="Source\GoogleAPI.cs" />
+    <Compile Include="Source\MerriamWebsterAPI.cs" />
+    <Compile Include="Source\Stands4Api.cs" />
+    <Compile Include="Source\System.Net.IRC.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TellManager.cs" />
-    <Compile Include="WolframAPI.cs" />
+    <Compile Include="Source\TellManager.cs" />
+    <Compile Include="Source\WolframAPI.cs" />
     <Content Include="App.ico" />
     <Content Include="TDL.txt" />
   </ItemGroup>
