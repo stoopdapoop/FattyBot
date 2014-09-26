@@ -225,9 +225,7 @@ namespace FattyBot {
             for (int i = RecentMathInvocations.Count - 1; i >= 0; --i) {
                 if ((DateTime.Now - RecentMathInvocations[i]) > anHour)
                     RecentMathInvocations.RemoveAt(i);
-
             }
-
             SendMessage(source, String.Format("{0} wolfram invocations have been made in the past hour. {1} left.", RecentMathInvocations.Count, 30 - RecentMathInvocations.Count));
         }
 
@@ -238,7 +236,6 @@ namespace FattyBot {
             for (int i = RecentMathInvocations.Count - 1; i >= 0; --i) {
                 if ((DateTime.Now - RecentMathInvocations[i]) > anHour)
                     RecentMathInvocations.RemoveAt(i);
-
             }
 
             if (RecentMathInvocations.Count > 30) {
@@ -260,7 +257,6 @@ namespace FattyBot {
             xmlDoc.Load(reader);
             StringBuilder messageAccumulator = new StringBuilder();
             int messageOverhead = GetMessageOverhead(source);
-
 
             XmlNodeList res = xmlDoc.GetElementsByTagName("queryresult");
             if (res[0].Attributes["success"].Value == "false") {

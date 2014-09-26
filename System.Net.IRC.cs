@@ -7,20 +7,20 @@ using System.Text;
 
 namespace System.Net {
 	#region Delegates
-    public delegate void ChannelMessage(string IrcUser, string Message);
-    public delegate void PrivateMessage(string IrcUser, string Message);
-	public delegate void CommandReceived(string IrcCommand);
-	public delegate void TopicSet(string IrcChannel, string IrcTopic);
-	public delegate void TopicOwner(string IrcChannel, string IrcUser, string TopicDate);
-	public delegate void NamesList(string UserNames);
-	public delegate void ServerMessage(string ServerMessage);
-	public delegate void Join(string IrcChannel, string IrcUser);
-	public delegate void Part(string IrcChannel, string IrcUser);
-	public delegate void Mode(string IrcChannel, string IrcUser, string UserMode);
+    public delegate void ChannelMessage(string ircUser, string message);
+    public delegate void PrivateMessage(string ircUser, string message);
+	public delegate void CommandReceived(string ircCommand);
+	public delegate void TopicSet(string ircChannel, string ircTopic);
+    public delegate void TopicOwner(string ircChannel, string ircUser, string topicDate);
+	public delegate void NamesList(string userNames);
+	public delegate void ServerMessage(string serverMessage);
+    public delegate void Join(string ircChannel, string ircUser);
+    public delegate void Part(string ircChannel, string ircUser);
+    public delegate void Mode(string ircChannel, string ircUser, string userMode);
 	public delegate void NickChange(string UserOldNick, string UserNewNick);
-	public delegate void Kick(string IrcChannel, string UserKicker, string UserKicked, string KickMessage);
-	public delegate void Quit(string UserQuit, string QuitMessage);
-    public delegate void Notice(string IrcUser, string Message);
+    public delegate void Kick(string ircChannel, string userKicker, string userKicked, string kickMessage);
+	public delegate void Quit(string userQuit, string quitMessage);
+    public delegate void Notice(string ircUser, string message);
 	#endregion
 	
 	public class IRC {
@@ -42,76 +42,23 @@ namespace System.Net {
 		#endregion
 		
 		#region Private Variables
-		private string ircServer;
-		private int ircPort;
-		private string ircNick;
-		private string ircUser;
-		private string ircRealName;
-		private string ircChannel;
-		private bool isInvisible;
-		private TcpClient ircConnection;
-		private NetworkStream ircStream;
-		private StreamWriter ircWriter;
-		private StreamReader ircReader;		
+        // aehuaeahu
 		#endregion
 		
 		#region Properties
-		public string IrcServer {
-			get { return this.ircServer; }
-			set { this.ircServer = value; }
-		} /* IrcServer */
-
-		public int IrcPort {
-			get { return this.ircPort; }
-			set { this.ircPort = value; }
-		} /* IrcPort */
-		
-		public string IrcNick {
-			get { return this.ircNick; }
-			set { this.ircNick = value; }
-		} /* IrcNick */
-		
-		public string IrcUser {
-			get { return this.ircUser; }
-			set { this.ircUser = value; }
-		} /* IrcUser */
-		
-		public string IrcRealName {
-			get { return this.ircRealName; }
-			set { this.ircRealName = value; }
-		} /* IrcRealName */
-		
-		public string IrcChannel {
-			get { return this.ircChannel; }
-			set { this.ircChannel = value; }
-		} /* IrcChannel */
-
+        public string IrcServer { get; set;  }
+        public int IrcPort { get; set; }
+        public string IrcNick { get; set; }
+        public string IrcUser { get; set; }
+        public string IrcRealName { get; set; }
+        public string IrcChannel { get; set; } 
         public string AuthPassword { get; set; }
-		
-		public bool IsInvisble {
-			get { return this.isInvisible; }
-			set { this.isInvisible = value; }
-		} /* IsInvisible */
-		
-		public TcpClient IrcConnection {
-			get { return this.ircConnection; }
-			set { this.ircConnection = value; }
-		} /* IrcConnection */
-		
-		public NetworkStream IrcStream {
-			get { return this.ircStream; }
-			set { this.ircStream = value; }
-		} /* IrcStream */
-		
-		public StreamWriter IrcWriter {
-			get { return this.ircWriter; }
-			set { this.ircWriter = value; }
-		} /* IrcWriter */
-		
-		public StreamReader IrcReader {
-			get { return this.ircReader; }
-			set { this.ircReader = value; }
-		} /* IrcReader */
+        public bool IsInvisble { get; set; }
+
+        public TcpClient IrcConnection { get; set; }
+        public NetworkStream IrcStream { get; set; }
+        public StreamWriter IrcWriter { get; set; }
+        public StreamReader IrcReader { get; set; } 
 		#endregion	
 		
 		#region Constructor
@@ -125,10 +72,10 @@ namespace System.Net {
 		#endregion
 		
 		#region Public Methods
-		public void Connect(string IrcServer, int IrcPort, string AuthPassword) {
-			this.IrcServer = IrcServer;
-			this.IrcPort = IrcPort;
-            this.AuthPassword = AuthPassword;
+		public void Connect(string ircServer, int ircPort, string authPassword) {
+			this.IrcServer = ircServer;
+			this.IrcPort = ircPort;
+            this.AuthPassword = authPassword;
 
 			// Connect with the IRC server.
 			this.IrcConnection = new TcpClient(this.IrcServer, this.IrcPort);
@@ -145,7 +92,7 @@ namespace System.Net {
 			this.IrcWriter.Flush();
 			this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
 			this.IrcWriter.Flush();
-            this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + AuthPassword);
+            this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + authPassword);
             this.IrcWriter.Flush();
             Thread.Sleep(400);
 			this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
@@ -170,7 +117,7 @@ namespace System.Net {
 			        this.IrcReader = new StreamReader(this.IrcStream);
                     this.IrcWriter = new StreamWriter(this.IrcStream);
 
-                    Console.WriteLine("Connected to {0}", ircServer);
+                    Console.WriteLine("Connected to {0}", IrcServer);
 
                     // Authenticate our user
                     string isInvisible = this.IsInvisble ? "8" : "0";
@@ -255,44 +202,44 @@ namespace System.Net {
 		
 		#region Private Methods
 		#region Server Messages
-		private void IrcTopic(string[] IrcCommand) {
-			string IrcChannel = IrcCommand[3];
+		private void IrcTopic(string[] ircCommand) {
+			string IrcChannel = ircCommand[3];
 			string IrcTopic = "";
-			for (int intI = 4; intI < IrcCommand.Length; intI++) {
-				IrcTopic += IrcCommand[intI] + " ";
+			for (int intI = 4; intI < ircCommand.Length; intI++) {
+				IrcTopic += ircCommand[intI] + " ";
 			}
 			if (eventTopicSet != null) { this.eventTopicSet(IrcChannel, IrcTopic.Remove(0, 1).Trim()); }
 		} /* IrcTopic */
 		
-		private void IrcTopicOwner(string[] IrcCommand) {
-			string IrcChannel = IrcCommand[3];
-			string IrcUser = IrcCommand[4].Split('!')[0];
-			string TopicDate = IrcCommand[5];
+		private void IrcTopicOwner(string[] ircCommand) {
+			string IrcChannel = ircCommand[3];
+			string IrcUser = ircCommand[4].Split('!')[0];
+			string TopicDate = ircCommand[5];
 			if (eventTopicOwner != null) { this.eventTopicOwner(IrcChannel, IrcUser, TopicDate); }
 		} /* IrcTopicOwner */
 		
-		private void IrcNamesList(string[] IrcCommand) {
+		private void IrcNamesList(string[] ircCommand) {
 		  string UserNames = "";
-			for (int intI = 5; intI < IrcCommand.Length; intI++) {
-				UserNames += IrcCommand[intI] + " ";
+			for (int intI = 5; intI < ircCommand.Length; intI++) {
+				UserNames += ircCommand[intI] + " ";
 			}
 			if (eventNamesList != null) { this.eventNamesList(UserNames.Remove(0, 1).Trim()); }
 		} /* IrcNamesList */
 		
-		private void IrcServerMessage(string[] IrcCommand) {
+		private void IrcServerMessage(string[] ircCommand) {
 			string ServerMessage = "";
-			for (int intI = 1; intI < IrcCommand.Length; intI++) {
-				ServerMessage += IrcCommand[intI] + " ";
+			for (int intI = 1; intI < ircCommand.Length; intI++) {
+				ServerMessage += ircCommand[intI] + " ";
 			}
 			if (eventServerMessage != null) { this.eventServerMessage(ServerMessage.Trim()); }
 		} /* IrcServerMessage */
 		#endregion
 		
 		#region Ping
-		private void IrcPing(string[] IrcCommand) {
+		private void IrcPing(string[] ircCommand) {
 			string PingHash = "";
-			for (int intI = 1; intI < IrcCommand.Length; intI++) {
-				PingHash += IrcCommand[intI] + " ";
+			for (int intI = 1; intI < ircCommand.Length; intI++) {
+				PingHash += ircCommand[intI] + " ";
 			}
 			this.IrcWriter.WriteLine("PONG " + PingHash);
 			this.IrcWriter.Flush();
@@ -300,24 +247,24 @@ namespace System.Net {
 		#endregion
 		
 		#region User Messages
-		private void IrcJoin(string[] IrcCommand) {
-			string IrcChannel = IrcCommand[2];
-			string IrcUser = IrcCommand[0].Split('!')[0];
+		private void IrcJoin(string[] ircCommand) {
+			string IrcChannel = ircCommand[2];
+			string IrcUser = ircCommand[0].Split('!')[0];
 			if (eventJoin != null) { this.eventJoin(IrcChannel.Remove(0, 1), IrcUser); }
 		} /* IrcJoin */
 		
-		private void IrcPart(string[] IrcCommand) {
-			string IrcChannel = IrcCommand[2];
-			string IrcUser = IrcCommand[0].Split('!')[0];
+		private void IrcPart(string[] ircCommand) {
+			string IrcChannel = ircCommand[2];
+			string IrcUser = ircCommand[0].Split('!')[0];
 			if (eventPart != null) { this.eventPart(IrcChannel, IrcUser); }
 		} /* IrcPart */
 		
-		private void IrcMode(string[] IrcCommand) {
-			string IrcChannel = IrcCommand[2];
-			string IrcUser = IrcCommand[0].Split('!')[0];
+		private void IrcMode(string[] ircCommand) {
+			string IrcChannel = ircCommand[2];
+			string IrcUser = ircCommand[0].Split('!')[0];
 			string UserMode = "";
-			for (int intI = 3; intI < IrcCommand.Length; intI++) {
-				UserMode += IrcCommand[intI] + " ";
+			for (int intI = 3; intI < ircCommand.Length; intI++) {
+				UserMode += ircCommand[intI] + " ";
 			}
 			if (UserMode.Substring(0, 1) == ":") {
 				UserMode = UserMode.Remove(0, 1);
@@ -325,39 +272,39 @@ namespace System.Net {
 			if (eventMode != null) { this.eventMode(IrcChannel, IrcUser, UserMode.Trim()); }
 		} /* IrcMode */
 		
-		private void IrcNickChange(string[] IrcCommand) {
-			string UserOldNick = IrcCommand[0].Split('!')[0];
-			string UserNewNick = IrcCommand[2].Remove(0, 1);
+		private void IrcNickChange(string[] ircCommand) {
+			string UserOldNick = ircCommand[0].Split('!')[0];
+			string UserNewNick = ircCommand[2].Remove(0, 1);
 			if (eventNickChange != null) { this.eventNickChange(UserOldNick, UserNewNick); }
 		} /* IrcNickChange */
 		
-		private void IrcKick(string[] IrcCommand) {
-			string UserKicker = IrcCommand[0].Split('!')[0];
-			string UserKicked = IrcCommand[3];
-			string IrcChannel = IrcCommand[2];
+		private void IrcKick(string[] ircCommand) {
+			string UserKicker = ircCommand[0].Split('!')[0];
+			string UserKicked = ircCommand[3];
+			string IrcChannel = ircCommand[2];
 			string KickMessage = "";
-			for (int intI = 4; intI < IrcCommand.Length; intI++) {
-				KickMessage += IrcCommand[intI] + " ";
+			for (int intI = 4; intI < ircCommand.Length; intI++) {
+				KickMessage += ircCommand[intI] + " ";
 			}
 			if (eventKick != null) { this.eventKick(IrcChannel, UserKicker, UserKicked, KickMessage.Remove(0, 1).Trim()); }
 		} /* IrcKick */
 		
-		private void IrcQuit(string[] IrcCommand) {
-			string UserQuit = IrcCommand[0].Split('!')[0];
+		private void IrcQuit(string[] ircCommand) {
+			string UserQuit = ircCommand[0].Split('!')[0];
 			string QuitMessage = "";
-			for (int intI = 2; intI < IrcCommand.Length; intI++) {
-				QuitMessage += IrcCommand[intI] + " ";
+			for (int intI = 2; intI < ircCommand.Length; intI++) {
+				QuitMessage += ircCommand[intI] + " ";
 			}
 			if (eventQuit != null) { this.eventQuit(UserQuit, QuitMessage.Remove(0, 1).Trim()); }
 		} /* IrcQuit */
 
-        void IrcPrivateMessage(string[] IrcCommand)
+        void IrcPrivateMessage(string[] ircCommand)
         {
-            string UserSender = IrcCommand[0].Split('!')[0];
-            string MessageTo = IrcCommand[2];
-            StringBuilder MessageBuilder = new StringBuilder(IrcCommand[3].Substring(1));
-            for (int intI = 4; intI < IrcCommand.Length; intI++) {
-                MessageBuilder.Append(" " + IrcCommand[intI]);
+            string UserSender = ircCommand[0].Split('!')[0];
+            string MessageTo = ircCommand[2];
+            StringBuilder MessageBuilder = new StringBuilder(ircCommand[3].Substring(1));
+            for (int intI = 4; intI < ircCommand.Length; intI++) {
+                MessageBuilder.Append(" " + ircCommand[intI]);
             }
             if (MessageTo == this.IrcChannel) {
                 if (eventChannelMessage != null) { this.eventChannelMessage(UserSender, MessageBuilder.ToString()); }
@@ -368,12 +315,12 @@ namespace System.Net {
 
         }
 
-        void IrcNotice(string[] IrcCommand)
+        void IrcNotice(string[] ircCommand)
         {
-            string UserSender = IrcCommand[0].Split('!')[0];
-            StringBuilder MessageBuilder = new StringBuilder(IrcCommand[3].Substring(1));
-            for (int intI = 4; intI < IrcCommand.Length; intI++) {
-                MessageBuilder.Append(" " + IrcCommand[intI]);
+            string UserSender = ircCommand[0].Split('!')[0];
+            StringBuilder MessageBuilder = new StringBuilder(ircCommand[3].Substring(1));
+            for (int intI = 4; intI < ircCommand.Length; intI++) {
+                MessageBuilder.Append(" " + ircCommand[intI]);
             }
             if (eventNotice != null) { this.eventNotice(UserSender, MessageBuilder.ToString()) ;}
         }

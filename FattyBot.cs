@@ -5,50 +5,48 @@ using System.Text;
 using System.Threading;
 
 namespace FattyBot {
-	partial class FattyBot {
-		private IRC IrcObject;
+    partial class FattyBot {
+        private IRC IrcObject;
         private const char CommandSymbol = '.';
         private Dictionary<string, Tuple<CommandMethod, string>> Commands = new Dictionary<string, Tuple<CommandMethod, string>>();
         private TellManager FattyTellManager;
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
         static DateTime TimeOfLastSentMessage = DateTime.Now;
         private delegate void CommandMethod(string caller, string args, string source);
-		
-		static void Main(string[] args) {
 
-                      
+        static void Main(string[] args) {
+
+
             string IrcServer = args[0];
             int IrcPort;
             int.TryParse(args[1], out IrcPort);
             string IrcUser = args[2];
             string IrcChan = args[3];
-            try
-            {
+            try {
                 FattyBot IrcApp = new FattyBot(IrcServer, IrcPort, IrcUser, IrcChan);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 Console.WriteLine(e.ToString() + e.StackTrace);
             }
-		} 
-		
-		private FattyBot(string IrcServer, int IrcPort, string IrcUser, string IrcChan) {
+        }
+
+        private FattyBot(string IrcServer, int IrcPort, string IrcUser, string IrcChan) {
             FattyTellManager = new TellManager(FattyUserAliases);
 
-			IrcObject = new IRC(IrcUser, IrcChan);
+            IrcObject = new IRC(IrcUser, IrcChan);
 
-			// Assign events
-			IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
-			IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
-			IrcObject.eventTopicOwner += new TopicOwner(IrcTopicOwner);
-			IrcObject.eventNamesList += new NamesList(IrcNamesList);
-			IrcObject.eventServerMessage += new ServerMessage(IrcServerMessage);
-			IrcObject.eventJoin += new Join(IrcJoin);
-			IrcObject.eventPart += new Part(IrcPart);
-			IrcObject.eventMode += new Mode(IrcMode);
-			IrcObject.eventNickChange += new NickChange(IrcNickChange);
-			IrcObject.eventKick += new Kick(IrcKick);
-			IrcObject.eventQuit += new Quit(IrcQuit);
+            // Assign events
+            IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
+            IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
+            IrcObject.eventTopicOwner += new TopicOwner(IrcTopicOwner);
+            IrcObject.eventNamesList += new NamesList(IrcNamesList);
+            IrcObject.eventServerMessage += new ServerMessage(IrcServerMessage);
+            IrcObject.eventJoin += new Join(IrcJoin);
+            IrcObject.eventPart += new Part(IrcPart);
+            IrcObject.eventMode += new Mode(IrcMode);
+            IrcObject.eventNickChange += new NickChange(IrcNickChange);
+            IrcObject.eventKick += new Kick(IrcKick);
+            IrcObject.eventQuit += new Quit(IrcQuit);
             IrcObject.eventChannelMessage += new ChannelMessage(IrcChannelMessage);
             IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
             IrcObject.eventNotice += new Notice(IrcNotice);
@@ -67,67 +65,63 @@ namespace FattyBot {
             Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GetShortURL), "Shortens URL"));
             Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(MathLimit), "Remaining wolfram calls this hour"));
             Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
-            	
-			// Connect to server
-			IrcObject.Connect(IrcServer, IrcPort, "poopie");
-		} 
-		
-		private void IrcCommandReceived(string IrcCommand) {
-		}
-		
-		private void IrcTopicSet(string IrcChan, string IrcTopic) {
-			Console.WriteLine(String.Format("Topic of {0} is: {1}", IrcChan, IrcTopic));
-		}
-		
-		private void IrcTopicOwner(string IrcChan, string IrcUser, string TopicDate) {
-			Console.WriteLine(String.Format("Topic of {0} set by {1} on {2} (unixtime)", IrcChan, IrcUser, TopicDate));
-		} 
-		
-		private void IrcNamesList(string UserNames) {
-			Console.WriteLine(String.Format("Names List: {0}", UserNames));
-		} 
-		
-		private void IrcServerMessage(string ServerMessage) {
-			Console.WriteLine(String.Format("Server Message: {0}", ServerMessage));
-		} 
-		
-		private void IrcJoin(string IrcChan, string IrcUser) {
-		} 
-		
-		private void IrcPart(string IrcChan, string IrcUser) {			
-		} 
-		
-		private void IrcMode(string IrcChan, string IrcUser, string UserMode) {
-            //if (IrcUser != IrcChan) {
-            //    Console.WriteLine(String.Format("{0} sets {1} in {2}", IrcUser, UserMode, IrcChan));
-            //}
-		} 
-		
-		private void IrcNickChange(string UserOldNick, string UserNewNick) {
-			//Console.WriteLine(String.Format("{0} changes nick to {1}", UserOldNick, UserNewNick));
-		} 
-		
-		private void IrcKick(string IrcChannel, string UserKicker, string UserKicked, string KickMessage) {
-			Console.WriteLine(String.Format("{0} kicks {1} out {2} ({3})", UserKicker, UserKicked, IrcChannel, KickMessage));
-		} 
-		
-		private void IrcQuit(string UserQuit, string QuitMessage) {
-		} 
 
-        private void IrcChannelMessage(string IrcUser, string Message) {
-            MonitorChat(IrcUser, Message, IrcObject.IrcChannel);
-            SeenList[IrcUser] = new Tuple<DateTime, String>(DateTime.Now, Message);
+            // Connect to server
+            IrcObject.Connect(IrcServer, IrcPort, "poopie");
         }
 
-        private void IrcPrivateMessage(string IrcUser, string Message) {
-            MonitorChat(IrcUser, Message, IrcUser);
+        private void IrcCommandReceived(string ircCommand) {
         }
 
-        private void IrcNotice(string IrcUser, string Message) {
-            Console.WriteLine(String.Format("!NOTICE {0}:{1}", IrcUser, Message));
+        private void IrcTopicSet(string ircChan, string ircTopic) {
+            Console.WriteLine(String.Format("Topic of {0} is: {1}", ircChan, ircTopic));
+        }
+
+        private void IrcTopicOwner(string ircChan, string ircUser, string topicDate) {
+            Console.WriteLine(String.Format("Topic of {0} set by {1} on {2} (unixtime)", ircChan, ircUser, topicDate));
+        }
+
+        private void IrcNamesList(string userNames) {
+            Console.WriteLine(String.Format("Names List: {0}", userNames));
+        }
+
+        private void IrcServerMessage(string serverMessage) {
+            Console.WriteLine(String.Format("Server Message: {0}", serverMessage));
+        }
+
+        private void IrcJoin(string ircChan, string ircUser) {
+        }
+
+        private void IrcPart(string ircChan, string ircUser) {
+        }
+
+        private void IrcMode(string ircChan, string ircUser, string userMode) {
+        }
+
+        private void IrcNickChange(string userOldNick, string userNewNick) {
+        }
+
+        private void IrcKick(string ircChannel, string userKicker, string userKicked, string kickMessage) {
+            Console.WriteLine(String.Format("{0} kicks {1} out {2} ({3})", userKicker, userKicked, ircChannel, kickMessage));
+        }
+
+        private void IrcQuit(string userQuit, string quitMessage) {
+        }
+
+        private void IrcChannelMessage(string ircUser, string message) {
+            MonitorChat(ircUser, message, IrcObject.IrcChannel);
+            SeenList[ircUser] = new Tuple<DateTime, String>(DateTime.Now, message);
+        }
+
+        private void IrcPrivateMessage(string ircUser, string message) {
+            MonitorChat(ircUser, message, ircUser);
+        }
+
+        private void IrcNotice(string ircUser, string message) {
+            Console.WriteLine(String.Format("!NOTICE {0}:{1}", ircUser, message));
             // get rid of this
-            if (Message[0] == CommandSymbol){
-                string command = Message.Substring(1);
+            if (message[0] == CommandSymbol) {
+                string command = message.Substring(1);
                 int separatorPosition = command.IndexOf(' ');
                 string commandName;
                 string commandArgs;
@@ -144,18 +138,18 @@ namespace FattyBot {
             }
         }
 
-        private void MonitorChat(string IrcUser, string Message, string MessageSource) {
-            DeliverTells(IrcUser, MessageSource);
+        private void MonitorChat(string ircUser, string message, string messageSource) {
+            DeliverTells(ircUser, messageSource);
 
-            ExecuteCommands(Message, IrcUser, MessageSource);
-            if(Message.ToLower() == String.Format("hi {0}", this.IrcObject.IrcNick).ToLower())
-                SendMessage(MessageSource, String.Format("hi {0} :]", IrcUser));
-            
+            ExecuteCommands(message, ircUser, messageSource);
+            if (message.ToLower() == String.Format("hi {0}", this.IrcObject.IrcNick).ToLower())
+                SendMessage(messageSource, String.Format("hi {0} :]", ircUser));
+
         }
 
-        private void ExecuteCommands(string Message, string IrcUser, string MessageSource) {
-            if (Message[0] == CommandSymbol) {
-                string command = Message.Substring(1);
+        private void ExecuteCommands(string message, string ircUser, string messageSource) {
+            if (message[0] == CommandSymbol) {
+                string command = message.Substring(1);
                 int separatorPosition = command.IndexOf(' ');
                 string commandName;
                 string commandArgs;
@@ -167,33 +161,31 @@ namespace FattyBot {
                     commandName = command;
                     commandArgs = "";
                 }
-                try
-                {
-                    RunCommand(IrcUser, MessageSource, commandName, commandArgs);
+                try {
+                    RunCommand(ircUser, messageSource, commandName, commandArgs);
                 }
-                catch (Exception ex)
-                {
-                    SendMessage(MessageSource, ex.ToString());
+                catch (Exception ex) {
+                    SendMessage(messageSource, ex.ToString());
                 }
-                
+
             }
         }
 
-        private void DeliverTells(string IrcUser, string MessageSource) {
+        private void DeliverTells(string ircUser, string messageSource) {
             List<Tuple<String, DateTime, string>> waitingTells;
-            bool hasMessagesWaiting = FattyTellManager.GetTellsForUser(IrcUser, out waitingTells);
+            bool hasMessagesWaiting = FattyTellManager.GetTellsForUser(ircUser, out waitingTells);
             if (hasMessagesWaiting) {
                 foreach (var waitingMessage in waitingTells) {
                     string fromUser = waitingMessage.Item1;
                     DateTime dateSent = waitingMessage.Item2;
                     string prettyTime = GetPrettyTime(DateTime.Now - dateSent);
                     string messageSent = waitingMessage.Item3;
-                    SendMessage(MessageSource, String.Format("{0}:<{1}>{2} - sent {3} ago.", IrcUser, fromUser, messageSent, prettyTime));
+                    SendMessage(messageSource, String.Format("{0}:<{1}>{2} - sent {3} ago.", ircUser, fromUser, messageSent, prettyTime));
                 }
             }
         }
 
-        private void RunCommand(string caller, string source, string command, string args) {           
+        private void RunCommand(string caller, string source, string command, string args) {
             Tuple<CommandMethod, string> meth;
 
             TimeSpan FiveMins = new TimeSpan(0, 5, 0);
@@ -203,17 +195,17 @@ namespace FattyBot {
                 TimeSpan timeLeft = (FiveMins - (DateTime.Now - GagTime));
                 SendMessage(source, String.Format("Sorry, {0} is a spoilsport and has me gagged for the next {1} minutes and {2} seconds. I can still respond to PM's though", Gagger, timeLeft.Minutes, timeLeft.Seconds));
             }
-            else if (realCommand){
+            else if (realCommand) {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("{0} used command called \"{1}\" with arguments \"{2}\"", caller, command, args);
                 Console.ResetColor();
                 meth.Item1.Invoke(caller, args, source);
-            }            
+            }
         }
 
         private void SendMessage(string sendTo, string message) {
             string outputMessage = String.Format("PRIVMSG {0} :{1}", sendTo, message);
-            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0 ,500);
+            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 500);
             TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;
             if (TimeSinceLastMessageSent < SendInterval)
                 Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
@@ -224,6 +216,5 @@ namespace FattyBot {
             Console.WriteLine(message);
             Console.ResetColor();
         }
-
-	}
-} 
+    }
+}
