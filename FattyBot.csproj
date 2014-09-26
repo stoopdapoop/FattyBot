@@ -149,7 +149,7 @@
     <Compile Include="Source\FattyBot.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands.cs" />
+    <Compile Include="Source\Commands.cs" />
     <Compile Include="Source\GoogleAPI.cs" />
     <Compile Include="Source\MerriamWebsterAPI.cs" />
     <Compile Include="Source\Stands4Api.cs" />
