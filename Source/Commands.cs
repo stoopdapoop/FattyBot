@@ -13,7 +13,6 @@ namespace FattyBot {
     partial class FattyBot {
 
         private void ListCommands(string caller, string args, string source) {
-            //StringBuilder availableMethodNames = new StringBuilder();
             foreach (KeyValuePair<string, Tuple<CommandMethod, string>> mthd in Commands) {
                 string ThisMessage = CommandSymbol + mthd.Key;
                 ThisMessage += " - " + mthd.Value.Item2;

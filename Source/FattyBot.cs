@@ -21,6 +21,12 @@ namespace FattyBot {
         private Stands4Api Stands4Interface;
         private WolframAPI WolframInterface;
 
+        private static TimeSpan FiveMins = new TimeSpan(0, 5, 0);
+        bool IsGagged { 
+            get { return (DateTime.Now - GagTime) < FiveMins; } 
+            set { IsGagged = value; } 
+        }
+
         static void Main(string[] args) {
 
 
@@ -199,12 +205,10 @@ namespace FattyBot {
         private void RunCommand(string caller, string source, string command, string args) {
             Tuple<CommandMethod, string> meth;
 
-            TimeSpan FiveMins = new TimeSpan(0, 5, 0);
-
             bool realCommand = Commands.TryGetValue(command, out meth);
-            if (source == IrcObject.IrcChannel && (DateTime.Now - GagTime) < FiveMins && realCommand) {
+            if (source == IrcObject.IrcChannel && IsGagged && realCommand) {
                 TimeSpan timeLeft = (FiveMins - (DateTime.Now - GagTime));
-                SendMessage(source, String.Format("Sorry, {0} is a spoilsport and has me gagged for the next {1} minutes and {2} seconds. I can still respond to PM's though", Gagger, timeLeft.Minutes, timeLeft.Seconds));
+                SendNotice(caller, String.Format("Sorry, {0} is a spoilsport and has me gagged for the next {1} minutes and {2} seconds. These responses are only visible to you", Gagger, timeLeft.Minutes, timeLeft.Seconds));
             }
             else if (realCommand) {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;

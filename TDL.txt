@@ -6,10 +6,12 @@ change help to "commands" and make help pm results
 
 .title for links
 
-http://www.dictionaryapi.com/products/api-collegiate-dictionary.htm
-
 notice joiners tell notification
 
 Read APIKeys from file so I don't have to worry about commits
 
 make seen work with aliases
+
+Make sendmessage defer message to sendnotice when fatty is gagged.
+
+create class for each message that contains all relevant info, and pass class around instead of strings
