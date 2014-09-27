@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Text;
 
-namespace System.Net {
+namespace FattyBot {
 	#region Delegates
     public delegate void ChannelMessage(string ircUser, string message);
     public delegate void PrivateMessage(string ircUser, string message);
@@ -64,7 +64,7 @@ namespace System.Net {
 		#region Constructor
 		public IRC(string ircNick, string ircChannel) {
 			this.IrcNick = ircNick;
-			this.IrcUserName = System.Environment.MachineName;
+            this.IrcUserName = ircNick;
 			this.IrcRealName = "FattyBot v1.0";
 			this.IrcChannel = ircChannel;
 			this.IsInvisble = false;
@@ -94,7 +94,7 @@ namespace System.Net {
 			this.IrcWriter.Flush();
             this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + authPassword);
             this.IrcWriter.Flush();
-            Thread.Sleep(400);
+            Thread.Sleep(3000);
 			this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
 			this.IrcWriter.Flush();
 
@@ -231,7 +231,7 @@ namespace System.Net {
 		
 		#region Server Ping
 		private void IrcPing(string[] ircCommand) {
-			string pingHash = "";
+		string pingHash = "";
 			for (int intI = 1; intI < ircCommand.Length; intI++) {
 				pingHash += ircCommand[intI] + " ";
 			}

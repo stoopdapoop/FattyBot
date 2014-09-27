@@ -153,7 +153,7 @@
     <Compile Include="Source\GoogleAPI.cs" />
     <Compile Include="Source\MerriamWebsterAPI.cs" />
     <Compile Include="Source\Stands4Api.cs" />
-    <Compile Include="Source\System.Net.IRC.cs">
+    <Compile Include="Source\IRC.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Source\TellManager.cs" />
