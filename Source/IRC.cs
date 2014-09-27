@@ -77,7 +77,6 @@ namespace FattyBot {
         public void Connect() {
             InternalConnect();
 
-            // Listen for commands
             while (true) {
                 ListenForCommands();
             }
@@ -264,7 +263,7 @@ namespace FattyBot {
                     this.IrcNick += rand.Next(9999);
                     this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
                     this.IrcWriter.Flush();
-                    Thread.Sleep(2000);
+                    Thread.Sleep(500);
                     this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
                     this.IrcWriter.Flush();
                     break;
