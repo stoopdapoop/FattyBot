@@ -70,7 +70,7 @@ namespace FattyBot {
             this.IrcServer = ircServer;
             this.IrcPort = ircPort;
             this.AuthPassword = authPassword;
-        } /* IRC */
+        }
         #endregion
 
         #region Public Methods
@@ -82,37 +82,6 @@ namespace FattyBot {
                 ListenForCommands();
             }
         }
-
-        private void ListenForCommands() {
-            try {
-                string ircCommand;
-                while (true) {
-                    while ((ircCommand = this.IrcReader.ReadLine()) != null) {
-                        if (eventReceiving != null) { this.eventReceiving(ircCommand); }
-
-                        string[] commandParts = ircCommand.Split(' ');
-                        if (commandParts[0][0] == ':')
-                            commandParts[0] = commandParts[0].Remove(0, 1);
-
-                        if (IsServerMessage(commandParts))
-                            HandleServerMessage(commandParts);
-
-                        else if (commandParts[0] == "PING")
-                            this.IrcPing(commandParts);
-                        else
-                            HandleChatMessage(commandParts);
-                    }
-                    InternalConnect();
-                }
-                
-            }
-            catch (Exception ex) {
-                if (this.IrcConnection.Connected)
-                    throw;
-            }
-
-        }
-
         #endregion
 
         #region Private Methods
@@ -142,9 +111,7 @@ namespace FattyBot {
             serverMessage = RecombineMessage(ircCommand, 1);
             if (eventServerMessage != null) { this.eventServerMessage(serverMessage.Trim()); }
         }
-        #endregion
 
-        #region Server Ping
         private void IrcPing(string[] ircCommand) {
             string pingHash = "";
             pingHash = String.Join(" ", ircCommand, 1, ircCommand.Length - 1);
@@ -228,8 +195,34 @@ namespace FattyBot {
 
         #region Utility Methods
 
-        string RecombineMessage(string[] messageParts, int startPos) {
-            return String.Join(" ", messageParts, startPos, messageParts.Length - startPos);
+        private void ListenForCommands() {
+            try {
+                string ircCommand;
+                while (true) {
+                    while ((ircCommand = this.IrcReader.ReadLine()) != null) {
+                        if (eventReceiving != null) { this.eventReceiving(ircCommand); }
+
+                        string[] commandParts = ircCommand.Split(' ');
+                        if (commandParts[0][0] == ':')
+                            commandParts[0] = commandParts[0].Remove(0, 1);
+
+                        if (IsServerMessage(commandParts))
+                            HandleServerMessage(commandParts);
+
+                        else if (commandParts[0] == "PING")
+                            this.IrcPing(commandParts);
+                        else
+                            HandleChatMessage(commandParts);
+                    }
+                    InternalConnect();
+                }
+
+            }
+            catch (Exception ex) {
+                if (this.IrcConnection.Connected)
+                    throw;
+            }
+
         }
 
 
@@ -245,13 +238,13 @@ namespace FattyBot {
 
 
             // Authenticate our user
-            string isInvisible = this.IsInvisble ? "8" : "0";
+            string isInvisible = this.IsInvisble ? "8" : "0";   
             this.IrcWriter.WriteLine(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));
-            this.IrcWriter.Flush();
             this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
-            this.IrcWriter.Flush();
             this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
             this.IrcWriter.Flush();
+
+            // wait to be granted our cloak/hostmask
             Thread.Sleep(3000);
             this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
             this.IrcWriter.Flush();
@@ -268,7 +261,8 @@ namespace FattyBot {
                 case "433":
                     // this is the message we get when nick is already taken
                     Random rand = new Random();
-                    this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick + rand.Next(9999)));
+                    this.IrcNick += rand.Next(9999);
+                    this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
                     this.IrcWriter.Flush();
                     Thread.Sleep(2000);
                     this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
@@ -309,6 +303,10 @@ namespace FattyBot {
                 return true;
 
             return false;
+        }
+
+        string RecombineMessage(string[] messageParts, int startPos) {
+            return String.Join(" ", messageParts, startPos, messageParts.Length - startPos);
         }
 
         #endregion
