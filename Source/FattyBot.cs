@@ -1,7 +1,5 @@
 using System;
-using System.Net;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace FattyBot {
@@ -51,7 +49,7 @@ namespace FattyBot {
             FattyTellManager = new TellManager(AliasInterface);
             Stands4Interface = new Stands4Api();
 
-            IrcObject = new IRC(IrcUser, IrcChan);
+            IrcObject = new IRC(IrcUser, IrcChan, IrcServer, IrcPort, "poopie");
             // Assign events
             IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
             IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
@@ -84,7 +82,7 @@ namespace FattyBot {
             Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
 
             // Connect to server
-            IrcObject.Connect(IrcServer, IrcPort, "poopie");
+            IrcObject.Connect();
         }
 
         private void IrcCommandReceived(string ircCommand) {
@@ -219,7 +217,7 @@ namespace FattyBot {
         }
 
         public static void SendMessage(string sendTo, string message) {
-            string outputMessage = String.Format("PRIVMSG {0} :{1}", sendTo, message);
+            string outputMessage = String.Format("PRIVMSG {0} :{1}\r\n", sendTo, message);
             InternalSend(outputMessage);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
@@ -227,7 +225,7 @@ namespace FattyBot {
         }
 
         public static void SendNotice(string sendTo, string message) {
-            string outputMessage = String.Format("NOTICE {0} :{1}", sendTo, message);
+            string outputMessage = String.Format("NOTICE {0} :{1}\r\n", sendTo, message);
             InternalSend(outputMessage);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
