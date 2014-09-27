@@ -101,7 +101,7 @@ namespace FattyBot {
         }
 
         static public int GetMessageOverhead(string source) {
-            return String.Format("PRIVMSG {0} :", source).Length;
+            return String.Format("PRIVMSG {0} :", source).Length+2;
         }
 
         public static bool TryAppend(StringBuilder sb, string message, string source, int reserve = 0) {
