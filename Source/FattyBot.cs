@@ -42,47 +42,47 @@ namespace FattyBot {
         }
 
         private FattyBot(string IrcServer, int IrcPort, string IrcUser, string IrcChan) {
-            GoogleInterface = new GoogleAPI();
-            WolframInterface = new WolframAPI();
-            MerriamWebsterInterface = new MerriamWebsterAPI(GoogleInterface);
-            AliasInterface = new AliasAPI();
-            FattyTellManager = new TellManager(AliasInterface);
-            Stands4Interface = new Stands4Api();
+            this.GoogleInterface = new GoogleAPI();
+            this.WolframInterface = new WolframAPI();
+            this.MerriamWebsterInterface = new MerriamWebsterAPI(this.GoogleInterface);
+            this.AliasInterface = new AliasAPI();
+            this.FattyTellManager = new TellManager(this.AliasInterface);
+            this.Stands4Interface = new Stands4Api();
 
-            IrcObject = new IRC(IrcUser, IrcChan, IrcServer, IrcPort, "poopie");
+            FattyBot.IrcObject = new IRC(IrcUser, IrcChan, IrcServer, IrcPort, "poopie");
             // Assign events
-            IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
-            IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
-            IrcObject.eventTopicOwner += new TopicOwner(IrcTopicOwner);
-            IrcObject.eventNamesList += new NamesList(IrcNamesList);
-            IrcObject.eventServerMessage += new ServerMessage(IrcServerMessage);
-            IrcObject.eventJoin += new Join(IrcJoin);
-            IrcObject.eventPart += new Part(IrcPart);
-            IrcObject.eventMode += new Mode(IrcMode);
-            IrcObject.eventNickChange += new NickChange(IrcNickChange);
-            IrcObject.eventKick += new Kick(IrcKick);
-            IrcObject.eventQuit += new Quit(IrcQuit);
-            IrcObject.eventChannelMessage += new ChannelMessage(IrcChannelMessage);
-            IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
-            IrcObject.eventNotice += new Notice(IrcNotice);
+            FattyBot.IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
+            FattyBot.IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
+            FattyBot.IrcObject.eventTopicOwner += new TopicOwner(IrcTopicOwner);
+            FattyBot.IrcObject.eventNamesList += new NamesList(IrcNamesList);
+            FattyBot.IrcObject.eventServerMessage += new ServerMessage(IrcServerMessage);
+            FattyBot.IrcObject.eventJoin += new Join(IrcJoin);
+            FattyBot.IrcObject.eventPart += new Part(IrcPart);
+            FattyBot.IrcObject.eventMode += new Mode(IrcMode);
+            FattyBot.IrcObject.eventNickChange += new NickChange(IrcNickChange);
+            FattyBot.IrcObject.eventKick += new Kick(IrcKick);
+            FattyBot.IrcObject.eventQuit += new Quit(IrcQuit);
+            FattyBot.IrcObject.eventChannelMessage += new ChannelMessage(IrcChannelMessage);
+            FattyBot.IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
+            FattyBot.IrcObject.eventNotice += new Notice(IrcNotice);
 
-            Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Just calls 'commands'"));
-            Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(Stands4Interface.Acronym), "Defines given acronym"));
-            Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
-            Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));
-            Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.Google), "Google search"));
-            Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.GoogleImageSearch), "Google image search"));
-            Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(AliasInterface.Alias), "Assigns nicknames to people"));
-            Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
-            Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.Math), "Wolfram alpha"));
-            Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.MathLimit), "Remaining wolfram calls this hour"));
-            Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
-            Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(MerriamWebsterInterface.Dictionary), "dictionary definitions"));
-            Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(GoogleInterface.URLShortener), "Shortens URL")); 
-            Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
+            this.Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Just calls 'commands'"));
+            this.Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(this.Stands4Interface.Acronym), "Defines given acronym"));
+            this.Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
+            this.Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));
+            this.Commands.Add("g", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.Google), "Google search"));
+            this.Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.GoogleImageSearch), "Google image search"));
+            this.Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(this.AliasInterface.Alias), "Assigns nicknames to people"));
+            this.Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
+            this.Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(this.WolframInterface.Math), "Wolfram alpha"));
+            this.Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.MathLimit), "Remaining wolfram calls this hour"));
+            this.Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
+            this.Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(this.MerriamWebsterInterface.Dictionary), "dictionary definitions"));
+            this.Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.URLShortener), "Shortens URL"));
+            this.Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
 
             // Connect to server
-            IrcObject.Connect();
+            FattyBot.IrcObject.Connect();
         }
 
         private void IrcCommandReceived(string ircCommand) {
@@ -124,8 +124,8 @@ namespace FattyBot {
         }
 
         private void IrcChannelMessage(string ircUser, string message) {
-            MonitorChat(ircUser, message, IrcObject.IrcChannel);
-            SeenList[ircUser] = new Tuple<DateTime, String>(DateTime.Now, message);
+            MonitorChat(ircUser, message, FattyBot.IrcObject.IrcChannel);
+            this.SeenList[ircUser] = new Tuple<DateTime, String>(DateTime.Now, message);
         }
 
         private void IrcPrivateMessage(string ircUser, string message) {
@@ -149,7 +149,7 @@ namespace FattyBot {
                     commandArgs = "";
                 }
                 if (commandName == "say")
-                    SendMessage(IrcObject.IrcChannel, commandArgs);
+                    SendMessage(FattyBot.IrcObject.IrcChannel, commandArgs);
             }
         }
 
@@ -157,7 +157,7 @@ namespace FattyBot {
             DeliverTells(ircUser, messageSource);
 
             ExecuteCommands(message, ircUser, messageSource);
-            if (message.ToLower() == String.Format("hi {0}", IrcObject.IrcNick).ToLower())
+            if (message.ToLower() == String.Format("hi {0}", FattyBot.IrcObject.IrcNick).ToLower())
                 SendMessage(messageSource, String.Format("hi {0} :]", ircUser));
 
         }
@@ -188,7 +188,7 @@ namespace FattyBot {
 
         private void DeliverTells(string ircUser, string messageSource) {
             List<Tuple<String, DateTime, string>> waitingTells;
-            bool hasMessagesWaiting = FattyTellManager.GetTellsForUser(ircUser, out waitingTells);
+            bool hasMessagesWaiting = this.FattyTellManager.GetTellsForUser(ircUser, out waitingTells);
             if (hasMessagesWaiting) {
                 foreach (var waitingMessage in waitingTells) {
                     string fromUser = waitingMessage.Item1;
@@ -203,8 +203,8 @@ namespace FattyBot {
         private void RunCommand(string caller, string source, string command, string args) {
             Tuple<CommandMethod, string> meth;
 
-            bool realCommand = Commands.TryGetValue(command, out meth);
-            if (source == IrcObject.IrcChannel && IsGagged && realCommand) {
+            bool realCommand = this.Commands.TryGetValue(command, out meth);
+            if (source == FattyBot.IrcObject.IrcChannel && IsGagged && realCommand) {
                 TimeSpan timeLeft = (FiveMins - (DateTime.Now - GagTime));
                 SendNotice(caller, String.Format("Sorry, {0} is a spoilsport and has me gagged for the next {1} minutes and {2} seconds. These responses are only visible to you", Gagger, timeLeft.Minutes, timeLeft.Seconds));
             }
@@ -234,12 +234,12 @@ namespace FattyBot {
 
         private static void InternalSend(string formattedMessage) {
             TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 400);
-            TimeSpan TimeSinceLastMessageSent = DateTime.Now - TimeOfLastSentMessage;
+            TimeSpan TimeSinceLastMessageSent = DateTime.Now - FattyBot.TimeOfLastSentMessage;
             if (TimeSinceLastMessageSent < SendInterval)
                 Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
-            IrcObject.IrcWriter.WriteLine(formattedMessage);
-            IrcObject.IrcWriter.Flush();
-            TimeOfLastSentMessage = DateTime.Now;
+            FattyBot.IrcObject.IrcWriter.WriteLine(formattedMessage);
+            FattyBot.IrcObject.IrcWriter.Flush();
+            FattyBot.TimeOfLastSentMessage = DateTime.Now;
         }
     }
 }
