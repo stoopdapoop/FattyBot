@@ -93,7 +93,7 @@ namespace FattyBot {
                     else
                         break;
                 }
-                messageAccumulator.Remove(messageAccumulator.Length - 2, 1);
+                messageAccumulator.Remove(messageAccumulator.Length - 1, 1);
                 messageAccumulator.Replace("\n", " ");
                 messageAccumulator.Replace("\r", " ");
 
