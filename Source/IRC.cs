@@ -215,13 +215,11 @@ namespace FattyBot {
                     }
                     InternalConnect();
                 }
-
             }
             catch (Exception ex) {
                 if (this.IrcConnection.Connected)
                     throw;
             }
-
         }
 
 
@@ -295,7 +293,7 @@ namespace FattyBot {
                 throw new Exception("cannot get toplevel domain from provided servername");
             if (!possibleSenderMatch.Success)
                 return false;
-            
+            Math
             string possibleVal = possibleSenderMatch.Value;
             string serverVal = serverNameMatch.Value;
             if (serverVal == possibleVal)

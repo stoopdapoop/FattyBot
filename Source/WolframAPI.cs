@@ -17,17 +17,17 @@ namespace FattyBot {
             MaxCallsPerHour = maxCallsPerHour;
         }
 
-        public void MathLimit(string caller, string args, string source) {
+        public void MathLimit(CommandInfo info) {
             //cull old messages
             TimeSpan anHour = new TimeSpan(1, 0, 0);
             for (int i = RecentMathInvocations.Count - 1; i >= 0; --i) {
                 if ((DateTime.Now - RecentMathInvocations[i]) > anHour)
                     RecentMathInvocations.RemoveAt(i);
             }
-            FattyBot.SendMessage(source, String.Format("{0} wolfram invocations have been made in the past hour. {1} left.", RecentMathInvocations.Count, 30 - RecentMathInvocations.Count));
+            FattyBot.SendMessage(info.Source, String.Format("{0} wolfram invocations have been made in the past hour. {1} left.", RecentMathInvocations.Count, 30 - RecentMathInvocations.Count));
         }
 
-        public void Math(string caller, string args, string source) {
+        public void Math(CommandInfo info) {
 
             //cull old messages
             TimeSpan anHour = new TimeSpan(1, 0, 0);
@@ -38,11 +38,11 @@ namespace FattyBot {
 
             if (RecentMathInvocations.Count > MaxCallsPerHour) {
                 TimeSpan nextInvoke = anHour - (DateTime.Now - RecentMathInvocations[0]);
-                FattyBot.SendMessage(source, String.Format("Sorry {0}, rate limit on this command exceeded, you can use it again in {2} minutes", caller, nextInvoke.Minutes));
+                FattyBot.SendMessage(info.Source, String.Format("Sorry {0}, rate limit on this command exceeded, you can use it again in {2} minutes", info.Caller, nextInvoke.Minutes));
                 return;
             }
 
-            args = args.Replace("+", "%2B");
+            string args = info.Arguments.Replace("+", "%2B");
             string searchURL = "http://api.wolframalpha.com/v2/query?input=" + args + "&appid=" + WolframAlphaKey;
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
             //string butts = searchRequest.RequestUri.IsWellFormedOriginalString();
@@ -52,7 +52,7 @@ namespace FattyBot {
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(reader);
             StringBuilder messageAccumulator = new StringBuilder();
-            int messageOverhead = FattyBot.GetMessageOverhead(source);
+            int messageOverhead = FattyBot.GetMessageOverhead(info.Source);
 
             XmlNodeList res = xmlDoc.GetElementsByTagName("queryresult");
             if (res[0].Attributes["success"].Value == "false") {
@@ -77,7 +77,7 @@ namespace FattyBot {
                     else
                         break;
                 }
-                FattyBot.SendMessage(source, messageAccumulator.ToString());
+                FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
             }
             else {
                 res = xmlDoc.GetElementsByTagName("plaintext");
@@ -97,7 +97,7 @@ namespace FattyBot {
                 messageAccumulator.Replace("\n", " ");
                 messageAccumulator.Replace("\r", " ");
 
-                FattyBot.SendMessage(source, messageAccumulator.ToString());
+                FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
             }
 
             RecentMathInvocations.Add(DateTime.Now);

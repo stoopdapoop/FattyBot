@@ -22,8 +22,8 @@ namespace FattyBot {
             GoogleInterface = goog;
         }
 
-        public void Dictionary(string caller, string args, string source) {
-            string searchURL = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/" + args + "?key=" + DictionaryKey;
+        public void Dictionary(CommandInfo info) {
+            string searchURL = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/" + info.Arguments + "?key=" + DictionaryKey;
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
             HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
             StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
@@ -35,7 +35,7 @@ namespace FattyBot {
             if (res.Count > 0) {
                 messageAccumulator.Append(res.Count + " result(s): ");
                 string candidateMessage = res[0].Attributes["id"].Value;
-                string shortUrl = GoogleInterface.GetShortURL("http://www.merriam-webster.com/dictionary/" + args);
+                string shortUrl = GoogleInterface.GetShortURL("http://www.merriam-webster.com/dictionary/" + info.Arguments);
                 var chldrn = res[0].ChildNodes;
                 foreach (XmlNode chld in chldrn) {
                     if (chld.Name == "def") {
@@ -43,7 +43,7 @@ namespace FattyBot {
                         foreach (XmlNode def in defnodes) {
                             if (def.Name == "dt") {
                                 candidateMessage += def.InnerText + " | ";
-                                if (!FattyBot.TryAppend(messageAccumulator, candidateMessage, source, shortUrl.Length + 2)) {
+                                if (!FattyBot.TryAppend(messageAccumulator, candidateMessage, info.Source, shortUrl.Length + 2)) {
                                     break;
                                 }
                             }
@@ -59,7 +59,7 @@ namespace FattyBot {
                 if (res.Count > 0) {
                     messageAccumulator.Append("Did you mean: ");
                     foreach (XmlNode nd in res) {
-                        if (!FattyBot.TryAppend(messageAccumulator, nd.InnerText + "|", source))
+                        if (!FattyBot.TryAppend(messageAccumulator, nd.InnerText + "|", info.Source))
                             break;
                     }
                     messageAccumulator.Remove(messageAccumulator.Length - 1, 1);
@@ -67,7 +67,7 @@ namespace FattyBot {
                 }
             }
 
-            FattyBot.SendMessage(source, messageAccumulator.ToString());
+            FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
         }
     }
 }

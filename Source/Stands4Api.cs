@@ -21,7 +21,9 @@ namespace FattyBot {
             MaxResultsToDisplay = maxResults;
         }
 
-        public void Calculate(string caller, string args, string source) {
+        public void Calculate(CommandInfo info) {
+
+            string args = info.Arguments.Replace("+", "%2B");
             string searchURL = "http://www.stands4.com/services/v2/conv.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
             searchURL += "&expression=" + args;
 
@@ -33,30 +35,33 @@ namespace FattyBot {
 
             var errs = xmlDoc.GetElementsByTagName("errorMessage");
             if (errs.Count > 0) {
-                string errorText = errs[0].InnerText.Substring(3);
-                for (int i = 1; i < errs.Count; ++i)
-                    errorText += " | " + errorText.Substring(3);
-                FattyBot.SendMessage(source, String.Format("Error(s) returned: {0}", errorText));
-                return;
+                if (errs[0].InnerText.Length > 3) {
+                    string errorText = errs[0].InnerText.Substring(3);
+                    for (int i = 1; i < errs.Count; ++i)
+                        errorText += " | " + errorText.Substring(3);
+                    FattyBot.SendMessage(info.Source, String.Format("Error(s) returned: {0}", errorText));
+                    return;
+                }
+                
             }
 
             StringBuilder messageAccumulator = new StringBuilder();
             var results = xmlDoc.GetElementsByTagName("result");
             if (results.Count > 0) {
                 foreach (XmlNode result in results) {
-                    if(!FattyBot.TryAppend(messageAccumulator, result.InnerText + "-", source))
+                    if (!FattyBot.TryAppend(messageAccumulator, result.InnerText + "-", info.Source))
                         break;
                 }
                 messageAccumulator.Remove(messageAccumulator.Length - 1, 1);
-                FattyBot.SendMessage(source, messageAccumulator.ToString());
+                FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
             }
             else
-                FattyBot.SendMessage(source, "No results");
+                FattyBot.SendMessage(info.Source, "No results for " + info.Arguments);
         }
 
-        public void Acronym(string caller, string args, string source) {
+        public void Acronym(CommandInfo info) {
             string searchURL = "http://www.stands4.com/services/v2/abbr.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
-            searchURL += "&term=" + args;
+            searchURL += "&term=" + info.Arguments;
             // this is for exact lookup, so I don't have to display results in an intelligent manner
             searchURL += "&searchtype=e";
 
@@ -71,7 +76,7 @@ namespace FattyBot {
                 string errorText = errs[0].InnerText;
                 for (int i = 1; i < errs.Count; ++i)
                     errorText += " | " + errorText;
-                FattyBot.SendMessage(source, String.Format("Errors returned: {0}", errorText));
+                FattyBot.SendMessage(info.Source, String.Format("Errors returned: {0}", errorText));
                 return;
             }
 
@@ -86,15 +91,15 @@ namespace FattyBot {
                         continue;
                     string def = child.InnerText;
                     //iterate through rest of entries, even though there's no point, saves code.
-                    if (outputCount >= MaxResultsToDisplay || !FattyBot.TryAppend(messageAccumulator, def + " | ", source))
+                    if (outputCount >= MaxResultsToDisplay || !FattyBot.TryAppend(messageAccumulator, def + " | ", info.Source))
                         break;
                     ++outputCount;
                 }
             }
 
             if (res.Count < 1)
-                messageAccumulator.Append("No results for: " + args);
-            FattyBot.SendMessage(source, messageAccumulator.ToString());
+                messageAccumulator.Append("No results for: " + info.Arguments);
+            FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
         }
     }
 }

@@ -45,23 +45,23 @@ namespace FattyBot {
             this.GoogleCustomSearchID = customSearchID;
         }
 
-        public void Google(string caller, string args, string source) {
+        public void Google(CommandInfo info) {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=" + GoogleCustomSearchID + "&q=";
-            searchURL += args;
-            GoogleAPIPrinter(searchURL, source);
+            searchURL += info.Arguments;
+            GoogleAPIPrinter(searchURL, info.Source);
         }
 
-        public void GoogleImageSearch(String caller, String args, string source) {
+        public void GoogleImageSearch(CommandInfo info) {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=" + GoogleCustomSearchID + "&searchType=image&q=";
-            searchURL += args;
-            GoogleAPIPrinter(searchURL, source);
+            searchURL += info.Arguments;
+            GoogleAPIPrinter(searchURL, info.Source);
         }
 
-        public void URLShortener(string caller, string args, string source) {
+        public void URLShortener(CommandInfo info) {
 
-            string shortURL = GetShortURL(args);
+            string shortURL = GetShortURL(info.Arguments);
 
-            FattyBot.SendMessage(source, shortURL);
+            FattyBot.SendMessage(info.Source, shortURL);
         }
 
         public string GetShortURL(string longURL) {

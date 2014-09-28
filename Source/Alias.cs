@@ -15,16 +15,16 @@ namespace FattyBot {
             FattyUserAliases = new UserAliasesRegistry();
         }
 
-        public void Alias(string caller, string args, string source) {
-            args = args.Trim();
+        public void Alias(CommandInfo info) {
+            string args = info.Arguments.Trim();
             var argParts = args.Split(' ');
 
             if (argParts.Length == 3)
-                PerformAliasOperation(argParts, source);
+                PerformAliasOperation(argParts, info.Source);
             else if (argParts.Length == 1)
-                DisplayUserAliases(argParts[0], source, args);
+                DisplayUserAliases(argParts[0], info.Source, args);
             else
-                FattyBot.SendMessage(source, "Not the right number of inputs");
+                FattyBot.SendMessage(info.Source, "Not the right number of inputs");
         }
 
         private void DisplayUserAliases(string alias, string source, string args) {
