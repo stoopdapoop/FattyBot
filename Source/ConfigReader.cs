@@ -9,8 +9,11 @@ namespace FattyBot {
     class ConfigReader {
 
         private Dictionary<string, string> Defines;
+        private Dictionary<string, string[]> DefineArrays;
+
         public ConfigReader() {
             Defines = new Dictionary<string, string>();
+            DefineArrays = new Dictionary<string, string[]>();
         }
 
         public void AddConfig(string filePath){
@@ -19,12 +22,27 @@ namespace FattyBot {
 
             string line;
             while((line = sr.ReadLine()) != null){
-                if (line[0] == '!')
+                if (line[0] == '!' || line.Length == 0)
                     continue;
-                int spacePos = line.IndexOf("=");
-                string defineKey = line.Substring(0, spacePos);
-                string defineValue = line.Substring(spacePos + 1, line.Length - (spacePos + 1));
-                Defines.Add(defineKey, defineValue);
+
+                if (line[0] == '<') {
+                    int assignPos = line.IndexOf("=");
+                    string defineKey = line.Substring(1, assignPos-1);
+
+                    List<string> defineValue = new List<string>();
+                    defineValue.Add(line.Substring(assignPos + 1, line.Length - (assignPos + 1)));                   
+                    while ((line = sr.ReadLine()) != null && line != ">"){
+                        defineValue.Add(line);
+                    }
+                    DefineArrays.Add(defineKey, defineValue.ToArray());
+                }
+                else {
+                    int assignPos = line.IndexOf("=");
+                    string defineKey = line.Substring(0, assignPos);
+                    string defineValue = line.Substring(assignPos + 1, line.Length - (assignPos + 1));
+                    Defines.Add(defineKey, defineValue);
+                }
+                
             }
         }
 
@@ -35,6 +53,15 @@ namespace FattyBot {
                 return value;
             else
                 return "";
+        }
+
+        public string[] GetValueArray(string key) {
+            string[] value;
+            bool found = DefineArrays.TryGetValue(key, out value);
+            if (found)
+                return value;
+            else
+                return new string[]{""};
         }
     }
 }
