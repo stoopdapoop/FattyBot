@@ -8,6 +8,7 @@ using System.Web;
 using Newtonsoft.Json;
 using System.Net;
 using System.IO;
+using System.Threading;
 
 namespace FattyBot {
     class Stands4Api {
@@ -100,6 +101,48 @@ namespace FattyBot {
             if (res.Count < 1)
                 messageAccumulator.Append("No results for: " + info.Arguments);
             FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
+        }
+
+        public void Quotes(CommandInfo info) {
+            string searchURL = "http://www.stands4.com/services/v2/quotes.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
+            searchURL += "&searchtype=SEARCH&query=" + info.Arguments;
+            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
+            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
+            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(reader);
+            
+            var results = xmlDoc.GetElementsByTagName("quote");
+            if (results.Count == 0) {
+                FattyBot.SendMessage(info.Source, "no " + info.Arguments + " quotes");
+                return;
+            }
+
+            int[] shuffedOrder = Enumerable.Range(0, results.Count).ToArray();
+            Shuffle(shuffedOrder);
+            StringBuilder sb = new StringBuilder();
+            foreach(int i in shuffedOrder) {
+                string trialQuoate = String.Format("\"{0}\"-{1}",results[i].InnerText, results[i].ParentNode.ChildNodes[1].InnerText);
+                if (FattyBot.TryAppend(sb, trialQuoate, info.Source))
+                    sb.Append(" | ");
+            }
+
+            if (sb.Length == 0)
+                FattyBot.SendMessage(info.Source, "There were results, but none of them were short enough to fit into a message :[");
+            else
+                FattyBot.SendMessage(info.Source, sb.ToString());
+        }
+
+        private static void Shuffle<T>(IList<T> list) {
+            Random rng = new Random();
+            int n = list.Count;
+            while (n > 1) {
+                n--;
+                int k = rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
         }
     }
 }
