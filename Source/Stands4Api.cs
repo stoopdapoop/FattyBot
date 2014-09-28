@@ -11,10 +11,15 @@ using System.IO;
 
 namespace FattyBot {
     class Stands4Api {
-        private const string Stands4UserID = "3492";
-        private const string Stands4TokenID = "lVM1lpRT2RHxUFRT";
+        private readonly string Stands4UserID;
+        private readonly string Stands4TokenID;
+        private int MaxResultsToDisplay;
 
-        static int maxResultsToDisplay = 10;
+        public Stands4Api(string userID, string tokenID, int maxResults){
+            Stands4UserID = userID;
+            Stands4TokenID = tokenID;
+            MaxResultsToDisplay = maxResults;
+        }
 
         public void Acronym(string caller, string args, string source) {
             string searchURL = "http://www.stands4.com/services/v2/abbr.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
@@ -48,7 +53,7 @@ namespace FattyBot {
                         continue;
                     string def = child.InnerText;
                     //iterate through rest of entries, even though there's no point, saves code.
-                    if (outputCount >= maxResultsToDisplay || !FattyBot.TryAppend(messageAccumulator, def + " | ", source))
+                    if (outputCount >= MaxResultsToDisplay || !FattyBot.TryAppend(messageAccumulator, def + " | ", source))
                         break;
                     ++outputCount;
                 }

@@ -58,25 +58,30 @@ namespace FattyBot {
         }
 
         private void CreateAPIInterfaces() {
-            Config.AddConfig("GoogleAPI.cfg");
+            FattyBot.Config.AddConfig("GoogleAPI.cfg");
             string googleAPIKey = Config.GetValue("GoogleAPIKey");
             string googleCustomSearch = Config.GetValue("GoogleCustomSearchID");
             this.GoogleInterface = new GoogleAPI(googleAPIKey, googleCustomSearch);
 
-            Config.AddConfig("WolframAlphaAPI.cfg");
+            FattyBot.Config.AddConfig("WolframAlphaAPI.cfg");
             string wolframKey = Config.GetValue("WolframKey");
             string maxWolframString = Config.GetValue("WolframMaxCallsPerHour");
             int maxWolframCallsPerHour = int.Parse(maxWolframString);
             this.WolframInterface = new WolframAPI(wolframKey, maxWolframCallsPerHour);
 
-            Config.AddConfig("MerriamWebsterAPI.cfg");
+            FattyBot.Config.AddConfig("MerriamWebsterAPI.cfg");
             string websterDictionaryKey = Config.GetValue("MerriamWebsterDictionaryAPIKey");
             string websterThesaurusKey = Config.GetValue("MerriamWebsterThesaurusAPIKey");
             this.MerriamWebsterInterface = new MerriamWebsterAPI(websterDictionaryKey, websterThesaurusKey, this.GoogleInterface);
 
+            FattyBot.Config.AddConfig("Stands4API.cfg");
+            string stands4UserID = Config.GetValue("Stands4UserID");
+            string stands4TokenID = Config.GetValue("Stands4TokenID");
+            int stands4MaxDisplay = int.Parse(Config.GetValue("Stands4MaxResults"));
+            this.Stands4Interface = new Stands4Api(stands4UserID, stands4TokenID, stands4MaxDisplay);
+
             this.AliasInterface = new AliasAPI();
-            this.FattyTellManager = new TellManager(this.AliasInterface);
-            this.Stands4Interface = new Stands4Api();
+            this.FattyTellManager = new TellManager(this.AliasInterface);            
         }
 
         private void RegisterCommands() {
