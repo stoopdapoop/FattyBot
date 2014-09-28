@@ -7,9 +7,15 @@ using System.IO;
 
 namespace FattyBot {
     class WolframAPI {
-        private const string WolframAlphaKey = "95JE4A-XQLX9WPU99";
+        private readonly string WolframAlphaKey;
+        private int MaxCallsPerHour = 30;
 
         private List<DateTime> RecentMathInvocations = new List<DateTime>();
+
+        public WolframAPI(string apiKey, int maxCallsPerHour) {
+            WolframAlphaKey = apiKey;
+            MaxCallsPerHour = maxCallsPerHour;
+        }
 
         public void MathLimit(string caller, string args, string source) {
             //cull old messages
@@ -30,7 +36,7 @@ namespace FattyBot {
                     RecentMathInvocations.RemoveAt(i);
             }
 
-            if (RecentMathInvocations.Count > 30) {
+            if (RecentMathInvocations.Count > MaxCallsPerHour) {
                 TimeSpan nextInvoke = anHour - (DateTime.Now - RecentMathInvocations[0]);
                 FattyBot.SendMessage(source, String.Format("Sorry {0}, rate limit on this command exceeded, you can use it again in {2} minutes", caller, nextInvoke.Minutes));
                 return;

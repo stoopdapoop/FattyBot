@@ -51,36 +51,32 @@ namespace FattyBot {
 
         private FattyBot(string ircServer, int ircPort, string ircUser, string ircChan,string ircPassword) {
 
+            CreateAPIInterfaces();
+            
+            FattyBot.IrcObject = new IRC(ircUser, ircChan, ircServer, ircPort, ircPassword);
+            // Assign events
+            AssignEvents();
+            RegisterCommands();
+        }
 
+        private void CreateAPIInterfaces() {
             Config.AddConfig("GoogleAPI.cfg");
             string googleAPIKey = Config.GetValue("GoogleAPIKey");
             string googleCustomSearch = Config.GetValue("GoogleCustomSearchID");
             this.GoogleInterface = new GoogleAPI(googleAPIKey, googleCustomSearch);
-            this.WolframInterface = new WolframAPI();
+
+            Config.AddConfig("WolframAlphaAPI.cfg");
+            string wolframKey = Config.GetValue("WolframKey");
+            string maxWolframString = Config.GetValue("WolframMaxCallsPerHour");
+            int maxWolframCallsPerHour = int.Parse(maxWolframString);
+            this.WolframInterface = new WolframAPI(wolframKey, maxWolframCallsPerHour);
+
             this.MerriamWebsterInterface = new MerriamWebsterAPI(this.GoogleInterface);
             this.AliasInterface = new AliasAPI();
             this.FattyTellManager = new TellManager(this.AliasInterface);
             this.Stands4Interface = new Stands4Api();
-
-
-
-            FattyBot.IrcObject = new IRC(ircUser, ircChan, ircServer, ircPort, ircPassword);
-            // Assign events
-            FattyBot.IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
-            FattyBot.IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
-            FattyBot.IrcObject.eventTopicOwner += new TopicOwner(IrcTopicOwner);
-            FattyBot.IrcObject.eventNamesList += new NamesList(IrcNamesList);
-            FattyBot.IrcObject.eventServerMessage += new ServerMessage(IrcServerMessage);
-            FattyBot.IrcObject.eventJoin += new Join(IrcJoin);
-            FattyBot.IrcObject.eventPart += new Part(IrcPart);
-            FattyBot.IrcObject.eventMode += new Mode(IrcMode);
-            FattyBot.IrcObject.eventNickChange += new NickChange(IrcNickChange);
-            FattyBot.IrcObject.eventKick += new Kick(IrcKick);
-            FattyBot.IrcObject.eventQuit += new Quit(IrcQuit);
-            FattyBot.IrcObject.eventChannelMessage += new ChannelMessage(IrcChannelMessage);
-            FattyBot.IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
-            FattyBot.IrcObject.eventNotice += new Notice(IrcNotice);
-
+        }
+        private void RegisterCommands() {
             this.Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Just calls 'commands'"));
             this.Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(this.Stands4Interface.Acronym), "Defines given acronym"));
             this.Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
@@ -95,9 +91,23 @@ namespace FattyBot {
             this.Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(this.MerriamWebsterInterface.Dictionary), "dictionary definitions"));
             this.Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.URLShortener), "Shortens URL"));
             this.Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
-
         }
-
+        private void AssignEvents() {
+            FattyBot.IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
+            FattyBot.IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
+            FattyBot.IrcObject.eventTopicOwner += new TopicOwner(IrcTopicOwner);
+            FattyBot.IrcObject.eventNamesList += new NamesList(IrcNamesList);
+            FattyBot.IrcObject.eventServerMessage += new ServerMessage(IrcServerMessage);
+            FattyBot.IrcObject.eventJoin += new Join(IrcJoin);
+            FattyBot.IrcObject.eventPart += new Part(IrcPart);
+            FattyBot.IrcObject.eventMode += new Mode(IrcMode);
+            FattyBot.IrcObject.eventNickChange += new NickChange(IrcNickChange);
+            FattyBot.IrcObject.eventKick += new Kick(IrcKick);
+            FattyBot.IrcObject.eventQuit += new Quit(IrcQuit);
+            FattyBot.IrcObject.eventChannelMessage += new ChannelMessage(IrcChannelMessage);
+            FattyBot.IrcObject.eventPrivateMessage += new PrivateMessage(IrcPrivateMessage);
+            FattyBot.IrcObject.eventNotice += new Notice(IrcNotice);
+        }
         private void IrcCommandReceived(string ircCommand) {
         }
 
