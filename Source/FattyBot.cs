@@ -13,6 +13,8 @@ namespace FattyBot {
         static DateTime TimeOfLastSentMessage = DateTime.Now;
         private delegate void CommandMethod(string caller, string args, string source);
 
+        static ConfigReader Config;
+
         private AliasAPI AliasInterface;
         private GoogleAPI GoogleInterface;
         private MerriamWebsterAPI MerriamWebsterInterface;
@@ -27,29 +29,42 @@ namespace FattyBot {
 
         static void Main(string[] args) {
 
+            FattyBot.Config = new ConfigReader();
+            Config.AddConfig("connection.cfg");
 
-            string IrcServer = args[0];
-            int IrcPort;
-            int.TryParse(args[1], out IrcPort);
-            string IrcUser = args[2];
-            string IrcChan = args[3];
+
+            string ircServer = Config.GetValue("ServerName");
+            int ircPort;
+            int.TryParse(Config.GetValue("Port"), out ircPort);
+            string ircUser = Config.GetValue("Nick");
+            string ircChan = Config.GetValue("Channel");
+            string ircPassword = FattyBot.Config.GetValue("Password");
             try {
-                FattyBot IrcApp = new FattyBot(IrcServer, IrcPort, IrcUser, IrcChan);
+                FattyBot IrcApp = new FattyBot(ircServer, ircPort, ircUser, ircChan, ircPassword);
+                // Connect to server
+                FattyBot.IrcObject.Connect();
             }
             catch (Exception e) {
                 Console.WriteLine(e.ToString() + e.StackTrace);
             }
         }
 
-        private FattyBot(string IrcServer, int IrcPort, string IrcUser, string IrcChan) {
-            this.GoogleInterface = new GoogleAPI();
+        private FattyBot(string ircServer, int ircPort, string ircUser, string ircChan,string ircPassword) {
+
+
+            Config.AddConfig("GoogleAPI.cfg");
+            string googleAPIKey = Config.GetValue("GoogleAPIKey");
+            string googleCustomSearch = Config.GetValue("GoogleCustomSearchID");
+            this.GoogleInterface = new GoogleAPI(googleAPIKey, googleCustomSearch);
             this.WolframInterface = new WolframAPI();
             this.MerriamWebsterInterface = new MerriamWebsterAPI(this.GoogleInterface);
             this.AliasInterface = new AliasAPI();
             this.FattyTellManager = new TellManager(this.AliasInterface);
             this.Stands4Interface = new Stands4Api();
 
-            FattyBot.IrcObject = new IRC(IrcUser, IrcChan, IrcServer, IrcPort, "poopie");
+
+
+            FattyBot.IrcObject = new IRC(ircUser, ircChan, ircServer, ircPort, ircPassword);
             // Assign events
             FattyBot.IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
             FattyBot.IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
@@ -81,8 +96,6 @@ namespace FattyBot {
             this.Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.URLShortener), "Shortens URL"));
             this.Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
 
-            // Connect to server
-            FattyBot.IrcObject.Connect();
         }
 
         private void IrcCommandReceived(string ircCommand) {

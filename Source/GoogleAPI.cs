@@ -7,8 +7,8 @@ using System.IO;
 namespace FattyBot {
     class GoogleAPI {
 
-        private const string GoogleAPIKey = "AIzaSyDniQGV3voKW5ZSrqWfiXgnWz-2AX6xNBo";
-        private const string GoogleCustomSearchID = "016968405084681006944:ksw5ydltpt0";
+        private readonly string GoogleAPIKey;
+        private readonly string GoogleCustomSearchID;
        
         #region GoogleStructs
         private class GoogleSearchItem {
@@ -39,6 +39,12 @@ namespace FattyBot {
         #endregion
 
         #region Public Commands
+
+        public GoogleAPI(string apiKey, string customSearchID) {
+            this.GoogleAPIKey = apiKey;
+            this.GoogleCustomSearchID = customSearchID;
+        }
+
         public void Google(string caller, string args, string source) {
             string searchURL = "https://www.googleapis.com/customsearch/v1?key=" + GoogleAPIKey + "&cx=" + GoogleCustomSearchID + "&q=";
             searchURL += args;

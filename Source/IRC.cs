@@ -244,7 +244,7 @@ namespace FattyBot {
             this.IrcWriter.Flush();
 
             // wait to be granted our cloak/hostmask
-            Thread.Sleep(3000);
+            Thread.Sleep(4000);
             this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
             this.IrcWriter.Flush();
         }
