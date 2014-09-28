@@ -31,12 +31,12 @@ namespace FattyBot {
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(reader);
 
-            var errs = xmlDoc.GetElementsByTagName("error");
+            var errs = xmlDoc.GetElementsByTagName("errorMessage");
             if (errs.Count > 0) {
-                string errorText = errs[0].InnerText;
+                string errorText = errs[0].InnerText.Substring(3);
                 for (int i = 1; i < errs.Count; ++i)
-                    errorText += " | " + errorText;
-                FattyBot.SendMessage(source, String.Format("Errors returned: {0}", errorText));
+                    errorText += " | " + errorText.Substring(3);
+                FattyBot.SendMessage(source, String.Format("Error(s) returned: {0}", errorText));
                 return;
             }
 
