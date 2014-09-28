@@ -233,6 +233,7 @@ namespace FattyBot {
             catch (Exception ex) {
                 if (this.IrcConnection.Connected)
                     throw;
+                InternalConnect();
             }
         }
 
@@ -253,7 +254,7 @@ namespace FattyBot {
             this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
             this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
             this.IrcWriter.Flush();
-            Thread.Sleep(4000);
+            Thread.Sleep(5000);
             // wait to be granted our cloak/hostmask
             JoinChannels();                 
         }

@@ -24,7 +24,7 @@ namespace FattyBot {
         private void Seen(CommandInfo info) {
             Tuple<DateTime, String> lastSeentEntry;
 
-            bool userSeen = SeenList.TryGetValue(info.Arguments, out lastSeentEntry);
+            bool userSeen = SeenList.TryGetValue(info.Arguments.ToLower(), out lastSeentEntry);
 
             if (userSeen) {
                 DateTime lastSeentTime = lastSeentEntry.Item1;

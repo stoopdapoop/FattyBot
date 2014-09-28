@@ -94,6 +94,7 @@ namespace FattyBot {
             this.Commands.Add("gis", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.GoogleImageSearch), "Google image search"));
             this.Commands.Add("alias", new Tuple<CommandMethod, string>(new CommandMethod(this.AliasInterface.Alias), "Assigns nicknames to people"));
             this.Commands.Add("commands", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "aeahueahu"));
+            this.Commands.Add("quote", new Tuple<CommandMethod, string>(new CommandMethod(Stands4Interface.Quotes), "Quote search"));
             this.Commands.Add("wolfram", new Tuple<CommandMethod, string>(new CommandMethod(this.WolframInterface.Math), "Wolfram alpha"));
             this.Commands.Add("wolflimiter", new Tuple<CommandMethod, string>(new CommandMethod(WolframInterface.MathLimit), "Remaining wolfram calls this hour"));
             this.Commands.Add("8ball", new Tuple<CommandMethod, string>(new CommandMethod(EightBall), "Magic 8 Ball"));
@@ -158,7 +159,7 @@ namespace FattyBot {
 
         private void IrcChannelMessage(string ircUser, string ircChannel, string message) {
             MonitorChat(ircUser, message, ircChannel, SourceType.Channel);
-            this.SeenList[ircUser] = new Tuple<DateTime, String>(DateTime.Now, message);
+            this.SeenList[ircUser.ToLower()] = new Tuple<DateTime, String>(DateTime.Now, message);
         }
 
         private void IrcPrivateMessage(string ircUser, string message) {
@@ -280,7 +281,7 @@ namespace FattyBot {
         }
 
         private static void InternalSend(string formattedMessage) {
-            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 400);
+            TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 500);
             TimeSpan TimeSinceLastMessageSent = DateTime.Now - FattyBot.TimeOfLastSentMessage;
             if (TimeSinceLastMessageSent < SendInterval)
                 Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);

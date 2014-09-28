@@ -152,14 +152,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Source\Commands.cs" />
-    <Compile Include="Source\GoogleAPI.cs" />
-    <Compile Include="Source\MerriamWebsterAPI.cs" />
-    <Compile Include="Source\Stands4Api.cs" />
+    <Compile Include="Source\APIs\GoogleAPI.cs" />
+    <Compile Include="Source\APIs\MerriamWebsterAPI.cs" />
+    <Compile Include="Source\APIs\Stands4Api.cs" />
     <Compile Include="Source\IRC.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Source\TellManager.cs" />
-    <Compile Include="Source\WolframAPI.cs" />
+    <Compile Include="Source\APIs\WolframAPI.cs" />
     <Content Include="App.ico" />
     <Content Include="TDL.txt" />
   </ItemGroup>
