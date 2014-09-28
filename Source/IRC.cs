@@ -3,10 +3,11 @@ using System.Net.Sockets;
 using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace FattyBot {
     #region Delegates
-    public delegate void ChannelMessage(string ircUser, string message);
+    public delegate void ChannelMessage(string ircUser,string ircChannel, string message);
     public delegate void PrivateMessage(string ircUser, string message);
     public delegate void CommandReceived(string ircCommand);
     public delegate void TopicSet(string ircChannel, string ircTopic);
@@ -41,7 +42,7 @@ namespace FattyBot {
         #endregion
 
         #region Private Variables
-        // aehuaeahu
+        private List<string> ChannelList;
         #endregion
 
         #region Properties
@@ -50,7 +51,6 @@ namespace FattyBot {
         public string IrcNick { get; set; }
         public string IrcUserName { get; set; }
         public string IrcRealName { get; set; }
-        public string IrcChannel { get; set; }
         public string AuthPassword { get; set; }
         public bool IsInvisble { get; set; }
 
@@ -61,15 +61,17 @@ namespace FattyBot {
         #endregion
 
         #region Constructor
-        public IRC(string ircNick, string ircChannel, string ircServer, int ircPort, string authPassword) {
+        public IRC(string ircNick, string ircServer, string[] ircChannels, int ircPort, string authPassword) {
             this.IrcNick = ircNick;
             this.IrcUserName = ircNick;
             this.IrcRealName = "FattyBot v1.0";
-            this.IrcChannel = ircChannel;
             this.IsInvisble = false;
             this.IrcServer = ircServer;
             this.IrcPort = ircPort;
             this.AuthPassword = authPassword;
+
+            this.ChannelList = new List<string>();
+            this.ChannelList.AddRange(ircChannels);
         }
         #endregion
 
@@ -80,6 +82,18 @@ namespace FattyBot {
             while (true) {
                 ListenForCommands();
             }
+        }
+
+        public void JoinChannel(string channelName) {
+            this.ChannelList.Add(channelName);
+            this.IrcWriter.WriteLine(String.Format("JOIN {0}", channelName));
+            this.IrcWriter.Flush();
+        }
+
+        public void LeaveChannel(string channelName) {
+            this.ChannelList.Remove(channelName);
+            this.IrcWriter.WriteLine(String.Format("PART {0}", channelName));
+            this.IrcWriter.Flush();
         }
         #endregion
 
@@ -173,8 +187,8 @@ namespace FattyBot {
             string message = "";
             message = RecombineMessage(ircCommand, 3);
             message = message.Remove(0, 1).Trim();
-            if (messageTo == this.IrcChannel) {
-                if (eventChannelMessage != null) { this.eventChannelMessage(userSender, message); }
+            if (messageTo[0] == '#') {
+                if (eventChannelMessage != null) { this.eventChannelMessage(userSender, messageTo, message); }
             }
             else if (messageTo == this.IrcNick) {
                 if (eventPrivateMessage != null) { this.eventPrivateMessage(userSender, message); }
@@ -222,7 +236,6 @@ namespace FattyBot {
             }
         }
 
-
         private void InternalConnect() {
             // Connect with the IRC server.
 
@@ -240,10 +253,16 @@ namespace FattyBot {
             this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
             this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
             this.IrcWriter.Flush();
-
-            // wait to be granted our cloak/hostmask
             Thread.Sleep(4000);
-            this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
+            // wait to be granted our cloak/hostmask
+            JoinChannels();                 
+        }
+
+        private void JoinChannels() {
+            foreach (string chan in this.ChannelList) {
+                Thread.Sleep(500);
+                this.IrcWriter.WriteLine(String.Format("JOIN {0}", chan));             
+            }
             this.IrcWriter.Flush();
         }
 
@@ -261,9 +280,7 @@ namespace FattyBot {
                     this.IrcNick += rand.Next(9999);
                     this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
                     this.IrcWriter.Flush();
-                    Thread.Sleep(500);
-                    this.IrcWriter.WriteLine(String.Format("JOIN {0}", this.IrcChannel));
-                    this.IrcWriter.Flush();
+                    JoinChannels();
                     break;
                 default: this.IrcServerMessage(commandParts); break;
             }
@@ -293,7 +310,6 @@ namespace FattyBot {
                 throw new Exception("cannot get toplevel domain from provided servername");
             if (!possibleSenderMatch.Success)
                 return false;
-            Math
             string possibleVal = possibleSenderMatch.Value;
             string serverVal = serverNameMatch.Value;
             if (serverVal == possibleVal)

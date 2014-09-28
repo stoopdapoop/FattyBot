@@ -36,7 +36,7 @@ namespace FattyBot {
             int ircPort;
             int.TryParse(Config.GetValue("Port"), out ircPort);
             string ircUser = Config.GetValue("Nick");
-            string ircChan = Config.GetValue("Channel");
+            string[] ircChan = Config.GetValueArray("Channel");
             string ircPassword = FattyBot.Config.GetValue("Password");
             try {
                 FattyBot IrcApp = new FattyBot(ircServer, ircPort, ircUser, ircChan, ircPassword);
@@ -48,10 +48,10 @@ namespace FattyBot {
             }
         }
 
-        private FattyBot(string ircServer, int ircPort, string ircUser, string ircChan,string ircPassword) {
+        private FattyBot(string ircServer, int ircPort, string ircUser, string[] ircChan,string ircPassword) {
             CreateAPIInterfaces();
             
-            FattyBot.IrcObject = new IRC(ircUser, ircChan, ircServer, ircPort, ircPassword);
+            FattyBot.IrcObject = new IRC(ircUser, ircServer, ircChan, ircPort, ircPassword);
             // Assign events
             AssignEvents();
             RegisterCommands();
@@ -156,8 +156,8 @@ namespace FattyBot {
         private void IrcQuit(string userQuit, string quitMessage) {
         }
 
-        private void IrcChannelMessage(string ircUser, string message) {
-            MonitorChat(ircUser, message, FattyBot.IrcObject.IrcChannel, SourceType.Channel);
+        private void IrcChannelMessage(string ircUser, string ircChannel, string message) {
+            MonitorChat(ircUser, message, ircChannel, SourceType.Channel);
             this.SeenList[ircUser] = new Tuple<DateTime, String>(DateTime.Now, message);
         }
 
@@ -168,8 +168,8 @@ namespace FattyBot {
         private void IrcNotice(string ircUser, string message) {
             Console.WriteLine(String.Format("!NOTICE {0}:{1}", ircUser, message));
             // get rid of this
-            if (message[0] == CommandSymbol) {
-                string command = message.Substring(1);
+            //if (message[0] == CommandSymbol) {
+            string command = message;
                 int separatorPosition = command.IndexOf(' ');
                 string commandName;
                 string commandArgs;
@@ -181,11 +181,22 @@ namespace FattyBot {
                     commandName = command;
                     commandArgs = "";
                 }
-                if (commandName == "say")
-                    SendMessage(FattyBot.IrcObject.IrcChannel, commandArgs);
-                else if (commandName == "join")
-                    SendMessage(FattyBot.IrcObject.IrcChannel, "Not yet, friend");
-            }
+                if (commandName == "say") {
+                    int spacePos = commandArgs.IndexOf(" ");
+                    spacePos = Math.Max(0, spacePos);
+                    string channel = commandArgs.Substring(0, spacePos);
+                    string sayMessage = commandArgs.Substring(spacePos + 1, commandArgs.Length - (spacePos + 1));
+                    SendMessage(channel, sayMessage);
+                }
+                else if (commandName == "join") {
+                    SendNotice(ircUser, "See you there");
+                    IrcObject.JoinChannel(commandArgs);
+                }
+                else if (commandName == "leave") {
+                    SendNotice(ircUser, "peace");
+                    IrcObject.LeaveChannel(commandArgs);
+                }
+            //}
         }
 
         private void MonitorChat(string ircUser, string message, string messageSource, SourceType type) {
@@ -240,13 +251,13 @@ namespace FattyBot {
             Tuple<CommandMethod, string> meth;
 
             bool realCommand = this.Commands.TryGetValue(info.CommandName, out meth);
-            if (info.Source == FattyBot.IrcObject.IrcChannel && IsGagged && realCommand) {
+            if (info.Source[0] == '#' && IsGagged && realCommand) {
                 TimeSpan timeLeft = (FiveMins - (DateTime.Now - GagTime));
                 SendNotice(info.Caller, String.Format("Sorry, {0} is a spoilsport and has me gagged for the next {1} minutes and {2} seconds. These responses are only visible to you", Gagger, timeLeft.Minutes, timeLeft.Seconds));
             }
             else if (realCommand) {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine("{0} used command called \"{1}\" with arguments \"{2}\"", info.Caller, info.CommandName, info.Arguments);
+                Console.WriteLine("{0} used command called \"{1}\" from {2} with arguments \"{3}\"", info.Caller, info.Source, info.CommandName, info.Arguments);
                 Console.ResetColor();
                 meth.Item1.Invoke(info);
             }
