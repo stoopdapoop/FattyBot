@@ -86,6 +86,7 @@ namespace FattyBot {
 
         private void RegisterCommands() {
             this.Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Just calls 'commands'"));
+            this.Commands.Add("c", new Tuple<CommandMethod, string>(new CommandMethod(this.Stands4Interface.Calculate), "Performs conversions and calculations"));
             this.Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(this.Stands4Interface.Acronym), "Defines given acronym"));
             this.Commands.Add("seen", new Tuple<CommandMethod, string>(new CommandMethod(Seen), "When was user last seen"));
             this.Commands.Add("tell", new Tuple<CommandMethod, string>(new CommandMethod(Tell), "Gives message to user when seen"));

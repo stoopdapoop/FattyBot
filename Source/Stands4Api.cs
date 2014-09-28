@@ -21,6 +21,39 @@ namespace FattyBot {
             MaxResultsToDisplay = maxResults;
         }
 
+        public void Calculate(string caller, string args, string source) {
+            string searchURL = "http://www.stands4.com/services/v2/conv.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
+            searchURL += "&expression=" + args;
+
+            HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
+            HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;
+            StreamReader reader = new StreamReader(searchResponse.GetResponseStream());
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(reader);
+
+            var errs = xmlDoc.GetElementsByTagName("error");
+            if (errs.Count > 0) {
+                string errorText = errs[0].InnerText;
+                for (int i = 1; i < errs.Count; ++i)
+                    errorText += " | " + errorText;
+                FattyBot.SendMessage(source, String.Format("Errors returned: {0}", errorText));
+                return;
+            }
+
+            StringBuilder messageAccumulator = new StringBuilder();
+            var results = xmlDoc.GetElementsByTagName("result");
+            if (results.Count > 0) {
+                foreach (XmlNode result in results) {
+                    if(!FattyBot.TryAppend(messageAccumulator, result.InnerText + "-", source))
+                        break;
+                }
+                messageAccumulator.Remove(messageAccumulator.Length - 1, 1);
+                FattyBot.SendMessage(source, messageAccumulator.ToString());
+            }
+            else
+                FattyBot.SendMessage(source, "No results");
+        }
+
         public void Acronym(string caller, string args, string source) {
             string searchURL = "http://www.stands4.com/services/v2/abbr.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
             searchURL += "&term=" + args;
