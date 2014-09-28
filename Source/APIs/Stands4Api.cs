@@ -121,16 +121,22 @@ namespace FattyBot {
             int[] shuffedOrder = Enumerable.Range(0, results.Count).ToArray();
             Shuffle(shuffedOrder);
             StringBuilder sb = new StringBuilder();
+            int returnedQuoteCount = 0;
             foreach(int i in shuffedOrder) {
                 string trialQuoate = String.Format("\"{0}\"-{1}",results[i].InnerText, results[i].ParentNode.ChildNodes[1].InnerText);
-                if (FattyBot.TryAppend(sb, trialQuoate, info.Source))
+                if (FattyBot.TryAppend(sb, trialQuoate, info.Source, ((returnedQuoteCount+1) + "/" + shuffedOrder.Length + 1).Length)) {
                     sb.Append(" | ");
+                    ++returnedQuoteCount;
+                }
             }
 
-            if (sb.Length == 0)
+            if (sb.Length == 0) {
                 FattyBot.SendMessage(info.Source, "There were results, but none of them were short enough to fit into a message :[");
-            else
+            }
+            else {
+                sb.Insert(0, returnedQuoteCount + "/" + shuffedOrder.Length + ":");
                 FattyBot.SendMessage(info.Source, sb.ToString());
+            }
         }
 
         private static void Shuffle<T>(IList<T> list) {
