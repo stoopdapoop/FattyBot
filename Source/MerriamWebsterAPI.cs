@@ -12,11 +12,13 @@ using System.IO;
 namespace FattyBot {
     class MerriamWebsterAPI {
 
-        private const string DictionaryKey = "e38f6db8-e792-44a6-b3ab-9acc75e9edec";
-        private const string ThesaurusKey = "3ce55c4e-5f26-4cce-af61-1dff08836aa7";
+        private readonly string DictionaryKey;
+        private readonly string ThesaurusKey;
         private GoogleAPI GoogleInterface;
 
-        public MerriamWebsterAPI(GoogleAPI goog) {
+        public MerriamWebsterAPI(string dictionaryKey, string thesaurusKey, GoogleAPI goog) {
+            DictionaryKey = dictionaryKey;
+            ThesaurusKey = thesaurusKey;
             GoogleInterface = goog;
         }
 

@@ -32,7 +32,6 @@ namespace FattyBot {
             FattyBot.Config = new ConfigReader();
             Config.AddConfig("connection.cfg");
 
-
             string ircServer = Config.GetValue("ServerName");
             int ircPort;
             int.TryParse(Config.GetValue("Port"), out ircPort);
@@ -50,7 +49,6 @@ namespace FattyBot {
         }
 
         private FattyBot(string ircServer, int ircPort, string ircUser, string ircChan,string ircPassword) {
-
             CreateAPIInterfaces();
             
             FattyBot.IrcObject = new IRC(ircUser, ircChan, ircServer, ircPort, ircPassword);
@@ -71,11 +69,16 @@ namespace FattyBot {
             int maxWolframCallsPerHour = int.Parse(maxWolframString);
             this.WolframInterface = new WolframAPI(wolframKey, maxWolframCallsPerHour);
 
-            this.MerriamWebsterInterface = new MerriamWebsterAPI(this.GoogleInterface);
+            Config.AddConfig("MerriamWebsterAPI.cfg");
+            string websterDictionaryKey = Config.GetValue("MerriamWebsterDictionaryAPIKey");
+            string websterThesaurusKey = Config.GetValue("MerriamWebsterThesaurusAPIKey");
+            this.MerriamWebsterInterface = new MerriamWebsterAPI(websterDictionaryKey, websterThesaurusKey, this.GoogleInterface);
+
             this.AliasInterface = new AliasAPI();
             this.FattyTellManager = new TellManager(this.AliasInterface);
             this.Stands4Interface = new Stands4Api();
         }
+
         private void RegisterCommands() {
             this.Commands.Add("help", new Tuple<CommandMethod, string>(new CommandMethod(ListCommands), "Just calls 'commands'"));
             this.Commands.Add("a", new Tuple<CommandMethod, string>(new CommandMethod(this.Stands4Interface.Acronym), "Defines given acronym"));
@@ -92,6 +95,7 @@ namespace FattyBot {
             this.Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.URLShortener), "Shortens URL"));
             this.Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
         }
+
         private void AssignEvents() {
             FattyBot.IrcObject.eventReceiving += new CommandReceived(IrcCommandReceived);
             FattyBot.IrcObject.eventTopicSet += new TopicSet(IrcTopicSet);
