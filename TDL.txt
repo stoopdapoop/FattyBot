@@ -5,8 +5,4 @@ serialize members
 
 .title for links
 
-notice joiners tell notification
-
-make seen work with aliases
-
 Make sendmessage defer message to sendnotice when fatty is gagged.

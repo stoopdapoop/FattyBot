@@ -54,5 +54,11 @@ namespace FattyBot {
             else
                 TellList[to] = new List<Tuple<String, DateTime, string>>(new Tuple<String, DateTime, string>[] { new Tuple<String, DateTime, string>(from, DateTime.Now, message) }); 
         }
+
+        public bool CheckTellsForUser(string name) {
+            List<Tuple<String, DateTime, String>> thisTell;
+            bool isPresent = TellList.TryGetValue(name, out thisTell);
+            return isPresent;
+        }
     }
 }

@@ -139,6 +139,12 @@ namespace FattyBot {
         }
 
         private void IrcJoin(string ircChan, string ircUser) {
+            bool hasMessagesWaiting = this.FattyTellManager.CheckTellsForUser(ircUser);
+            if (!hasMessagesWaiting)
+                return;
+
+            Thread.Sleep(4000);
+            SendNotice(ircUser, "You have tells waiting, Speak in a channel with " + IrcObject.IrcNick + " present, or pm me to receive it");
         }
 
         private void IrcPart(string ircChan, string ircUser) {
