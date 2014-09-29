@@ -251,10 +251,13 @@ namespace FattyBot {
             // Authenticate our user
             string isInvisible = this.IsInvisble ? "8" : "0";   
             this.IrcWriter.WriteLine(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));
+            this.IrcWriter.Flush();
             this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
+            this.IrcWriter.Flush();
+            Thread.Sleep(1000);
             this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
             this.IrcWriter.Flush();
-            Thread.Sleep(5000);
+            Thread.Sleep(4000);
             // wait to be granted our cloak/hostmask
             JoinChannels();                 
         }

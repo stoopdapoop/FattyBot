@@ -194,7 +194,7 @@ namespace FattyBot {
                     IrcObject.JoinChannel(commandArgs);
                 }
                 else if (commandName == "leave") {
-                    SendNotice(ircUser, "peace");
+                    SendNotice(ircUser, "peacin'");
                     IrcObject.LeaveChannel(commandArgs);
                 }
             //}
@@ -210,41 +210,42 @@ namespace FattyBot {
         }
 
         private void ExecuteCommands(string message, string ircUser, string messageSource, SourceType messageSourceType) {
-            if (message[0] == CommandSymbol) {
-                string command = message.Substring(1);
-                int separatorPosition = command.IndexOf(' ');
-                string commandName;
-                string commandArgs;
-                if (separatorPosition > -1) {
-                    commandName = command.Substring(0, separatorPosition);
-                    commandArgs = command.Substring(separatorPosition + 1);
-                }
-                else {
-                    commandName = command;
-                    commandArgs = "";
-                }
-                try {
-                    CommandInfo info = new CommandInfo(ircUser, commandArgs, messageSource, commandName, messageSourceType);
-                    RunCommand(info);
-                }
-                catch (Exception ex) {
-                    SendMessage(messageSource, ex.ToString());
-                }
+            if (message[0] != CommandSymbol)
+                return;
 
+            string command = message.Substring(1);
+            int separatorPosition = command.IndexOf(' ');
+            string commandName;
+            string commandArgs;
+            if (separatorPosition > -1) {
+                commandName = command.Substring(0, separatorPosition);
+                commandArgs = command.Substring(separatorPosition + 1);
+            }
+            else {
+                commandName = command;
+                commandArgs = "";
+            }
+            try {
+                CommandInfo info = new CommandInfo(ircUser, commandArgs, messageSource, commandName, messageSourceType);
+                RunCommand(info);
+            }
+            catch (Exception ex) {
+                SendMessage(messageSource, ex.ToString());
             }
         }
 
         private void DeliverTells(string ircUser, string messageSource) {
             List<Tuple<String, DateTime, string>> waitingTells;
             bool hasMessagesWaiting = this.FattyTellManager.GetTellsForUser(ircUser, out waitingTells);
-            if (hasMessagesWaiting) {
-                foreach (var waitingMessage in waitingTells) {
-                    string fromUser = waitingMessage.Item1;
-                    DateTime dateSent = waitingMessage.Item2;
-                    string prettyTime = GetPrettyTime(DateTime.Now - dateSent);
-                    string messageSent = waitingMessage.Item3;
-                    SendMessage(messageSource, String.Format("{0}:<{1}>{2} - sent {3} ago.", ircUser, fromUser, messageSent, prettyTime));
-                }
+            if (!hasMessagesWaiting)
+                return;
+
+            foreach (var waitingMessage in waitingTells) {
+                string fromUser = waitingMessage.Item1;
+                DateTime dateSent = waitingMessage.Item2;
+                string prettyTime = GetPrettyTime(DateTime.Now - dateSent);
+                string messageSent = waitingMessage.Item3;
+                SendMessage(messageSource, String.Format("{0}:<{1}>{2} - sent {3} ago.", ircUser, fromUser, messageSent, prettyTime));
             }
         }
 
