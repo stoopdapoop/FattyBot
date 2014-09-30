@@ -241,6 +241,7 @@ namespace FattyBot {
             // Connect with the IRC server.
 
             this.IrcConnection = new TcpClient(this.IrcServer, this.IrcPort);
+            this.IrcConnection.ReceiveTimeout = 1000 * 60 * 5;
             this.IrcStream = this.IrcConnection.GetStream();
             this.IrcReader = new StreamReader(this.IrcStream);
             this.IrcWriter = new StreamWriter(this.IrcStream);
