@@ -6,3 +6,9 @@ serialize members
 .title for links
 
 Make sendmessage defer message to sendnotice when fatty is gagged.
+
+thread every command
+
+create remind
+
+async httpwebrequests when there's work to be done
