@@ -170,6 +170,8 @@ namespace FattyBot {
 
         private void IrcPrivateMessage(string ircUser, string message) {
             MonitorChat(ircUser, message, ircUser, SourceType.PrivateMessage);
+
+            HandleBotProtocol(message, ircUser);          
         }
 
         private void IrcNotice(string ircUser, string message) {
@@ -216,27 +218,29 @@ namespace FattyBot {
         }
 
         private void ExecuteCommands(string message, string ircUser, string messageSource, SourceType messageSourceType) {
-            if (message[0] != CommandSymbol)
-                return;
 
-            string command = message.Substring(1);
-            int separatorPosition = command.IndexOf(' ');
-            string commandName;
-            string commandArgs;
-            if (separatorPosition > -1) {
-                commandName = command.Substring(0, separatorPosition);
-                commandArgs = command.Substring(separatorPosition + 1);
-            }
-            else {
-                commandName = command;
-                commandArgs = "";
-            }
             try {
+                if (message[0] != CommandSymbol)
+                    return;
+
+                string command = message.Substring(1);
+                int separatorPosition = command.IndexOf(' ');
+                string commandName;
+                string commandArgs;
+                if (separatorPosition > -1) {
+                    commandName = command.Substring(0, separatorPosition);
+                    commandArgs = command.Substring(separatorPosition + 1);
+                }
+                else {
+                    commandName = command;
+                    commandArgs = "";
+                }
+
                 CommandInfo info = new CommandInfo(ircUser, commandArgs, messageSource, commandName, messageSourceType);
                 RunCommand(info);
             }
             catch (Exception ex) {
-                SendMessage(messageSource, ex.ToString());
+                SendMessage(messageSource, ex.ToString() + "with command: " + message);
             }
         }
 
@@ -295,6 +299,11 @@ namespace FattyBot {
             FattyBot.IrcObject.IrcWriter.WriteLine(formattedMessage);
             FattyBot.IrcObject.IrcWriter.Flush();
             FattyBot.TimeOfLastSentMessage = DateTime.Now;
+        }
+
+        private void HandleBotProtocol(string message, string ircUser) {
+            if (message == "SYN")
+                SendMessage(ircUser, "ACK");
         }
     }
 }
