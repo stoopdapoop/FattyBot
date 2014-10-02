@@ -218,6 +218,9 @@ namespace FattyBot {
         }
 
         private void ExecuteCommands(string message, string ircUser, string messageSource, SourceType messageSourceType) {
+            if (String.IsNullOrWhiteSpace(message))
+                return;
+
             try {
                 if (message[0] != CommandSymbol)
                     return;
