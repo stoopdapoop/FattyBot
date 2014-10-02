@@ -218,7 +218,6 @@ namespace FattyBot {
         }
 
         private void ExecuteCommands(string message, string ircUser, string messageSource, SourceType messageSourceType) {
-
             try {
                 if (message[0] != CommandSymbol)
                     return;
@@ -246,7 +245,7 @@ namespace FattyBot {
 
         private void DeliverTells(string ircUser, string messageSource) {
             List<Tuple<String, DateTime, string>> waitingTells;
-            bool hasMessagesWaiting = this.FattyTellManager.GetTellsForUser(ircUser, out waitingTells);
+            bool hasMessagesWaiting = this.FattyTellManager.GetTellsForUser(ircUser.ToLower(), out waitingTells);
             if (!hasMessagesWaiting)
                 return;
 

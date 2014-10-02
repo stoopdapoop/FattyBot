@@ -79,7 +79,7 @@ namespace FattyBot {
                     continue;
                 }
                 else {
-                    FattyTellManager.AddTellForUser(recip, info.Caller, msg);
+                    FattyTellManager.AddTellForUser(recip.ToLower(), info.Caller, msg);
                 }
             }
             SendMessage(info.Source, String.Format("Will tell that to {0} when they are round", parts[0]));
