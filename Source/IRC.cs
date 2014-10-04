@@ -230,9 +230,12 @@ namespace FattyBot {
                     InternalConnect();
                 }
             }
+            catch (IOException ex) {
+                Console.WriteLine(ex);
+                InternalConnect();
+            }
             catch (Exception ex) {
-                if (this.IrcConnection.Connected)
-                    throw;
+                Console.WriteLine(ex);
                 InternalConnect();
             }
         }
