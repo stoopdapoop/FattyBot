@@ -20,6 +20,7 @@ namespace FattyBot {
         private MerriamWebsterAPI MerriamWebsterInterface;
         private Stands4Api Stands4Interface;
         private WolframAPI WolframInterface;
+        private DatabaseManager DatabaseInterface;
 
         private static TimeSpan FiveMins = new TimeSpan(0, 5, 0);
         bool IsGagged { 
@@ -48,12 +49,12 @@ namespace FattyBot {
             }
         }
 
-        private FattyBot(string ircServer, int ircPort, string ircUser, string[] ircChan,string ircPassword) {
-            CreateAPIInterfaces();
+        private FattyBot(string ircServer, int ircPort, string ircUser, string[] ircChan,string ircPassword) {         
             
             FattyBot.IrcObject = new IRC(ircUser, ircServer, ircChan, ircPort, ircPassword);
             // Assign events
             AssignEvents();
+            CreateAPIInterfaces();
             RegisterCommands();
         }
 
@@ -79,6 +80,13 @@ namespace FattyBot {
             string stands4TokenID = Config.GetValue("Stands4TokenID");
             int stands4MaxDisplay = int.Parse(Config.GetValue("Stands4MaxResults"));
             this.Stands4Interface = new Stands4Api(stands4UserID, stands4TokenID, stands4MaxDisplay);
+            
+            FattyBot.Config.AddConfig("Database.cfg");
+            string databaseServerAddress = Config.GetValue("DatabaseServerAddress");
+            string databaseUserID = Config.GetValue("DatabaseUserID");
+            string databasePassword = Config.GetValue("DatabasePassword");
+            string databaseDatabase = Config.GetValue("DatabaseDatabase");
+            this.DatabaseInterface = new DatabaseManager(databaseServerAddress, databaseUserID, databasePassword, databaseDatabase);
 
             this.AliasInterface = new AliasAPI();
             this.FattyTellManager = new TellManager(this.AliasInterface);            

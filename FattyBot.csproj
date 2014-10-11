@@ -152,6 +152,7 @@
     </Compile>
     <Compile Include="Source\CommandInfo.cs" />
     <Compile Include="Source\ConfigReader.cs" />
+    <Compile Include="Source\DatabaseManager.cs" />
     <Compile Include="Source\FattyBot.cs">
       <SubType>Code</SubType>
     </Compile>
