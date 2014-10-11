@@ -208,12 +208,19 @@ namespace FattyBot {
             //}
         }
 
+        string[] thanksReplies = { "np", "don't mention it", "yee", "yep", "yip", ":]", "I'm the best" };
+
         private void MonitorChat(string ircUser, string message, string messageSource, SourceType type) {
             DeliverTells(ircUser, messageSource);
 
             ExecuteCommands(message, ircUser, messageSource, type);
             if (message.ToLower() == String.Format("hi {0}", FattyBot.IrcObject.IrcNick).ToLower())
                 SendMessage(messageSource, String.Format("hi {0} :]", ircUser));
+
+            if (message.ToLower() == String.Format("thanks {0}", FattyBot.IrcObject.IrcNick).ToLower()) {
+                Random rand = new Random();
+                SendMessage(messageSource, String.Format("{0}, {1}", thanksReplies[rand.Next(thanksReplies.Length)], ircUser));
+            }
 
         }
 
