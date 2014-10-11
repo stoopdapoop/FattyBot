@@ -59,7 +59,7 @@ namespace FattyBot {
                 messageAccumulator.Append("Query failed: ");
                 res = xmlDoc.GetElementsByTagName("tip");
                 for (int i = 0; i < res.Count; i++) {
-                    string desc = res[i].InnerText;
+                    string desc = res[i].Attributes["text"].Value;
                     if (desc.Length + messageOverhead + messageAccumulator.Length <= 480)
                         messageAccumulator.Append(desc + ". ");
                     else
