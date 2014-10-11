@@ -176,36 +176,33 @@ namespace FattyBot {
 
         private void IrcNotice(string ircUser, string message) {
             Console.WriteLine(String.Format("!NOTICE {0}:{1}", ircUser, message));
-            // get rid of this
-            //if (message[0] == CommandSymbol) {
             string command = message;
-                int separatorPosition = command.IndexOf(' ');
-                string commandName;
-                string commandArgs;
-                if (separatorPosition > -1) {
-                    commandName = command.Substring(0, separatorPosition);
-                    commandArgs = command.Substring(separatorPosition + 1);
-                }
-                else {
-                    commandName = command;
-                    commandArgs = "";
-                }
-                if (commandName == "say") {
-                    int spacePos = commandArgs.IndexOf(" ");
-                    spacePos = Math.Max(0, spacePos);
-                    string channel = commandArgs.Substring(0, spacePos);
-                    string sayMessage = commandArgs.Substring(spacePos + 1, commandArgs.Length - (spacePos + 1));
-                    SendMessage(channel, sayMessage);
-                }
-                else if (commandName == "join") {
-                    SendNotice(ircUser, "See you there");
-                    IrcObject.JoinChannel(commandArgs);
-                }
-                else if (commandName == "leave") {
-                    SendNotice(ircUser, "peacin'");
-                    IrcObject.LeaveChannel(commandArgs);
-                }
-            //}
+            int separatorPosition = command.IndexOf(' ');
+            string commandName;
+            string commandArgs;
+            if (separatorPosition > -1) {
+                commandName = command.Substring(0, separatorPosition);
+                commandArgs = command.Substring(separatorPosition + 1);
+            }
+            else {
+                commandName = command;
+                commandArgs = "";
+            }
+            if (commandName == "say") {
+                int spacePos = commandArgs.IndexOf(" ");
+                spacePos = Math.Max(0, spacePos);
+                string channel = commandArgs.Substring(0, spacePos);
+                string sayMessage = commandArgs.Substring(spacePos + 1, commandArgs.Length - (spacePos + 1));
+                SendMessage(channel, sayMessage);
+            }
+            else if (commandName == "join") {
+                SendNotice(ircUser, "See you there");
+                IrcObject.JoinChannel(commandArgs);
+            }
+            else if (commandName == "leave") {
+                SendNotice(ircUser, "peacin'");
+                IrcObject.LeaveChannel(commandArgs);
+            }
         }
 
         string[] thanksReplies = { "np", "don't mention it", "yee", "yep", "yip", ":]", "I'm the best" };
