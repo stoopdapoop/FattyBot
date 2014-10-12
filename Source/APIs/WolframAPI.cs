@@ -93,11 +93,15 @@ namespace FattyBot {
                     else
                         break;
                 }
-                messageAccumulator.Remove(messageAccumulator.Length - 1, 1);
-                messageAccumulator.Replace("\n", " ");
-                messageAccumulator.Replace("\r", " ");
-
-                FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
+                if (messageAccumulator.Length > 0) {
+                    messageAccumulator.Remove(messageAccumulator.Length - 1, 1);
+                    messageAccumulator.Replace("\n", " ");
+                    messageAccumulator.Replace("\r", " ");
+                    FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
+                }
+                else {
+                    FattyBot.SendMessage(info.Source, "The result was likely too big to fit into a single message. Sorry " + info.Caller + " :[");
+                }
             }
 
             RecentMathInvocations.Add(DateTime.Now);
