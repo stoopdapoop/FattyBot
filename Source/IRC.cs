@@ -264,10 +264,14 @@ namespace FattyBot {
 
             // Authenticate our user
             string isInvisible = this.IsInvisble ? "8" : "0";
+            Console.WriteLine("Sending user info...");
             SendServerMessage(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));          
             SendServerMessage(String.Format("NICK {0}", this.IrcNick));
+            
             Thread.Sleep(1000);
+            Console.WriteLine("Identifying...");
             SendServerMessage("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
+            
             Thread.Sleep(4000);
             // wait to be granted our cloak/hostmask
             JoinChannels();                 
@@ -276,6 +280,7 @@ namespace FattyBot {
         private void JoinChannels() {
             foreach (string chan in this.ChannelList) {
                 Thread.Sleep(500);
+                Console.WriteLine("Joining " + chan + "...");
                 SendServerMessage(String.Format("JOIN {0}", chan));             
             }
         }
