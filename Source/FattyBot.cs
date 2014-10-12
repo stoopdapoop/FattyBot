@@ -208,7 +208,7 @@ namespace FattyBot {
                 IrcObject.JoinChannel(commandArgs);
             }
             else if (commandName == "leave") {
-                SendNotice(ircUser, "peacin'");
+                SendMessage(commandArgs, "peacin'");
                 IrcObject.LeaveChannel(commandArgs);
             }
         }
@@ -307,12 +307,14 @@ namespace FattyBot {
 
         private static void InternalSend(string formattedMessage) {
             TimeSpan SendInterval = new TimeSpan(0, 0, 0, 0, 500);
+            //todo: loop here and retry
             TimeSpan TimeSinceLastMessageSent = DateTime.Now - FattyBot.TimeOfLastSentMessage;
             if (TimeSinceLastMessageSent < SendInterval)
                 Thread.Sleep((SendInterval - TimeSinceLastMessageSent).Milliseconds);
-            FattyBot.IrcObject.IrcWriter.WriteLine(formattedMessage);
-            FattyBot.IrcObject.IrcWriter.Flush();
+
+            FattyBot.IrcObject.SendServerMessage(formattedMessage);
             FattyBot.TimeOfLastSentMessage = DateTime.Now;
+
         }
 
         private void HandleBotProtocol(string message, string ircUser) {
