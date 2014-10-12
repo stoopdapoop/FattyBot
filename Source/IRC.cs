@@ -43,21 +43,22 @@ namespace FattyBot {
 
         #region Private Variables
         private List<string> ChannelList;
+        private Object SendMessageLock = new Object();
         #endregion
 
         #region Properties
-        public string IrcServer { get; set; }
-        public int IrcPort { get; set; }
-        public string IrcNick { get; set; }
-        public string IrcUserName { get; set; }
-        public string IrcRealName { get; set; }
-        public string AuthPassword { get; set; }
-        public bool IsInvisble { get; set; }
+        public string IrcServer { get; private set; }
+        public int IrcPort { get; private set; }
+        public string IrcNick { get; private set; }
+        public string IrcUserName { get; private set; }
+        public string IrcRealName { get; private set; }
+        public string AuthPassword { get; private set; }
+        public bool IsInvisble { get; private set; }
 
-        public TcpClient IrcConnection { get; set; }
-        public NetworkStream IrcStream { get; set; }
-        public StreamWriter IrcWriter { get; set; }
-        public StreamReader IrcReader { get; set; }
+        public TcpClient IrcConnection { get; private set; }
+        public NetworkStream IrcStream { get; private set; }
+        public StreamWriter IrcWriter { get; private set; }
+        public StreamReader IrcReader { get; private set; }
         #endregion
 
         #region Constructor
@@ -84,16 +85,21 @@ namespace FattyBot {
             }
         }
 
+        public void SendServerMessage(string message) {
+            lock (SendMessageLock) {
+                this.IrcWriter.WriteLine(message);
+                this.IrcWriter.Flush();
+            }
+        }
+
         public void JoinChannel(string channelName) {
             this.ChannelList.Add(channelName);
-            this.IrcWriter.WriteLine(String.Format("JOIN {0}", channelName));
-            this.IrcWriter.Flush();
+            SendServerMessage(String.Format("JOIN {0}", channelName));
         }
 
         public void LeaveChannel(string channelName) {
             this.ChannelList.Remove(channelName);
-            this.IrcWriter.WriteLine(String.Format("PART {0}", channelName));
-            this.IrcWriter.Flush();
+            SendServerMessage(String.Format("PART {0}", channelName));
         }
         #endregion
 
@@ -128,8 +134,7 @@ namespace FattyBot {
         private void IrcPing(string[] ircCommand) {
             string pingHash = "";
             pingHash = String.Join(" ", ircCommand, 1, ircCommand.Length - 1);
-            this.IrcWriter.WriteLine("PONG " + pingHash);
-            this.IrcWriter.Flush();
+            SendServerMessage("PONG " + pingHash);
         }
         #endregion
 
@@ -213,19 +218,24 @@ namespace FattyBot {
                 string ircCommand;
                 while (true) {
                     while ((ircCommand = this.IrcReader.ReadLine()) != null) {
-                        if (eventReceiving != null) { this.eventReceiving(ircCommand); }
 
-                        string[] commandParts = ircCommand.Split(' ');
-                        if (commandParts[0][0] == ':')
-                            commandParts[0] = commandParts[0].Remove(0, 1);
+                        Thread th = new Thread(new ThreadStart(() => {
+                            if (eventReceiving != null) { this.eventReceiving(ircCommand); }
 
-                        if (IsServerMessage(commandParts))
-                            HandleServerMessage(commandParts);
+                            string[] commandParts = ircCommand.Split(' ');
+                            if (commandParts[0][0] == ':')
+                                commandParts[0] = commandParts[0].Remove(0, 1);
 
-                        else if (commandParts[0] == "PING")
-                            this.IrcPing(commandParts);
-                        else
-                            HandleChatMessage(commandParts);
+                            if (IsServerMessage(commandParts))
+                                HandleServerMessage(commandParts);
+
+                            else if (commandParts[0] == "PING")
+                                this.IrcPing(commandParts);
+                            else
+                                HandleChatMessage(commandParts);
+                        }));
+                        th.Start();
+                        
                     }
                     InternalConnect();
                 }
@@ -253,14 +263,11 @@ namespace FattyBot {
 
 
             // Authenticate our user
-            string isInvisible = this.IsInvisble ? "8" : "0";   
-            this.IrcWriter.WriteLine(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));
-            this.IrcWriter.Flush();
-            this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
-            this.IrcWriter.Flush();
+            string isInvisible = this.IsInvisble ? "8" : "0";
+            SendServerMessage(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));          
+            SendServerMessage(String.Format("NICK {0}", this.IrcNick));
             Thread.Sleep(1000);
-            this.IrcWriter.WriteLine("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
-            this.IrcWriter.Flush();
+            SendServerMessage("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
             Thread.Sleep(4000);
             // wait to be granted our cloak/hostmask
             JoinChannels();                 
@@ -269,9 +276,8 @@ namespace FattyBot {
         private void JoinChannels() {
             foreach (string chan in this.ChannelList) {
                 Thread.Sleep(500);
-                this.IrcWriter.WriteLine(String.Format("JOIN {0}", chan));             
+                SendServerMessage(String.Format("JOIN {0}", chan));             
             }
-            this.IrcWriter.Flush();
         }
 
         private void HandleServerMessage(string[] commandParts) {
@@ -285,9 +291,12 @@ namespace FattyBot {
                 case "433":
                     // this is the message we get when nick is already taken
                     Random rand = new Random();
-                    this.IrcNick += rand.Next(9999);
-                    this.IrcWriter.WriteLine(String.Format("NICK {0}", this.IrcNick));
-                    this.IrcWriter.Flush();
+                    //this.IrcNick += rand.Next(9999);
+                    SendServerMessage(String.Format("NICK {0}", this.IrcNick+rand.Next(9999)));
+                    SendServerMessage(String.Format("PRIVMSG NickServ :ghost {0} {1}", this.IrcNick, this.AuthPassword));
+                    Thread.Sleep(1000);
+                    SendServerMessage(String.Format("NICK {0}", this.IrcNick));
+                    SendServerMessage("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
                     JoinChannels();
                     break;
                 default: this.IrcServerMessage(commandParts); break;
