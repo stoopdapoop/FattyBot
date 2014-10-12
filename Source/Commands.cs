@@ -22,51 +22,16 @@ namespace FattyBot {
         }
 
         private void Seen(CommandInfo info) {
-            Tuple<DateTime, String> lastSeentEntry;
-
-            UserAliasGroup group;
-            AliasInterface.FattyUserAliases.GetAliasGroup(info.Arguments, out group);
-            if (group != null) {
-                DateTime newestDateTime = DateTime.MinValue;
-                string newestNick = "";
-                string newestMessage = "";
-                foreach(string uAlias in group.GetUserAliases()){
-                    Tuple<DateTime, string> dateThing;
-                    bool found = SeenList.TryGetValue(uAlias, out dateThing);
-                    if (found && dateThing.Item1 > newestDateTime) {
-                        newestDateTime = dateThing.Item1;
-                        newestNick = uAlias;
-                        newestMessage = dateThing.Item2;
-                    }
-                }
-
-                if (newestNick.Length > 0) {
-                    DateTime lastSeentTime = newestDateTime;
-                    TimeSpan lastSeenSpan = DateTime.Now - lastSeentTime;
-                    string prettyTime = GetPrettyTime(lastSeenSpan);
-                    SendMessage(info.Source, String.Format("Last seen {0} on {1}. {2} ago. \"{3}\"", newestNick, lastSeentTime, prettyTime, newestMessage));
-                }
-                else
-                    SendMessage(info.Source, String.Format("Haven't ever seen \"{0}\" around", info.Arguments));
+            // todo get rid of old alias and seenrecords and handle when this command is not called from channel
+            var result = DatabaseInterface.GetLastLogMessageFromUser(info.Arguments, info.Source, IrcObject.IrcServer);
+            if (result == null) {
+                SendMessage(info.Source, String.Format("Never seen {0} around", info.Arguments));
             }
             else {
-                bool userSeen = SeenList.TryGetValue(info.Arguments.ToLower(), out lastSeentEntry);
-
-                if (userSeen) {
-                    DateTime lastSeentTime = lastSeentEntry.Item1;
-                    TimeSpan lastSeenSpan = DateTime.Now - lastSeentTime;
-                    string prettyTime = GetPrettyTime(lastSeenSpan);
-
-                    if (info.Caller == info.Arguments)
-                        SendMessage(info.Source, String.Format("You were last seen (before this command) {0} on {1}. {2} ago. \"{3}\"", info.Arguments, lastSeentTime, prettyTime, lastSeentEntry.Item2));
-                    else
-                        SendMessage(info.Source, String.Format("Last seen {0} on {1}. {2} ago. \"{3}\"", info.Arguments, lastSeentTime, prettyTime, lastSeentEntry.Item2));
-                }
-                else {
-                    SendMessage(info.Source, String.Format("Haven't ever seen \"{0}\" around", info.Arguments));
-                }
-            }
-            
+                TimeSpan lastSeenSpan = DateTime.Now - result.Item3;
+                string prettyTime = GetPrettyTime(lastSeenSpan);
+                SendMessage(info.Source, String.Format("Last seen {0} on {1} in {2}. {3} ago. \"{4}\"", info.Arguments, result.Item3, result.Item2, prettyTime, result.Item1));
+            }         
         }
 
         private void Tell(CommandInfo info) {

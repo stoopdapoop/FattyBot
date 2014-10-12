@@ -216,6 +216,9 @@ namespace FattyBot {
         string[] thanksReplies = { "np", "don't mention it", "yee", "yep", "yip", ":]", "I'm the best" };
 
         private void MonitorChat(string ircUser, string message, string messageSource, SourceType type) {
+            if (type == SourceType.Channel)
+                DatabaseInterface.SetChannelLog(ircUser, messageSource, IrcObject.IrcServer, message);
+            
             DeliverTells(ircUser, messageSource);
 
             ExecuteCommands(message, ircUser, messageSource, type);
