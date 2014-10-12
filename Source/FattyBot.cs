@@ -89,7 +89,7 @@ namespace FattyBot {
             this.DatabaseInterface = new DatabaseManager(databaseServerAddress, databaseUserID, databasePassword, databaseDatabase);
 
             this.AliasInterface = new AliasAPI();
-            this.FattyTellManager = new TellManager(this.AliasInterface);            
+            this.FattyTellManager = new TellManager(DatabaseInterface);            
         }
 
         private void RegisterCommands() {

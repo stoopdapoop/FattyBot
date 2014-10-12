@@ -272,7 +272,7 @@ namespace FattyBot {
             Console.WriteLine("Identifying...");
             SendServerMessage("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
             
-            Thread.Sleep(4000);
+            Thread.Sleep(5000);
             // wait to be granted our cloak/hostmask
             JoinChannels();                 
         }

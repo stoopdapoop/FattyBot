@@ -25,7 +25,7 @@ namespace FattyBot {
             // todo get rid of old alias and seenrecords and handle when this command is not called from channel
             var result = DatabaseInterface.GetLastLogMessageFromUser(info.Arguments, info.Source, IrcObject.IrcServer);
             if (result == null) {
-                SendMessage(info.Source, String.Format("Never seen {0} around", info.Arguments));
+                SendMessage(info.Source, String.Format("Never seen {0} in this channel", info.Arguments));
             }
             else {
                 TimeSpan lastSeenSpan = DateTime.Now - result.Item3;
