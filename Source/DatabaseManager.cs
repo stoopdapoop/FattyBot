@@ -24,7 +24,7 @@ namespace FattyBot {
 
         public DatabaseManager(string serverAddress, string userId, string pwd, string database) {
             try {
-                ConnectionString = String.Format("server={0}; uid={1}; pwd={2}; database={3};", serverAddress, userId, pwd, database);
+                ConnectionString = String.Format("server={0}; uid={1}; pwd={2}; database={3}; ConnectionLifeTime={4};", serverAddress, userId, pwd, database, 5);
                 MySqlConnection con = new MySqlConnection(ConnectionString);
                 con.Open();
                 Console.WriteLine("Connected to " + serverAddress + " database successfully");
