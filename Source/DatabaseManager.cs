@@ -22,13 +22,25 @@ namespace FattyBot {
 
         private readonly string ConnectionString;
 
+        private class RAIIReader {
+            public MySqlDataReader m_Reader;
+            RAIIReader(MySqlDataReader reader) {
+                m_Reader = reader;
+            }
+
+            ~RAIIReader() {
+                m_Reader.Close();
+            }
+        }
+
         public DatabaseManager(string serverAddress, string userId, string pwd, string database) {
             try {
-                ConnectionString = String.Format("server={0}; uid={1}; pwd={2}; database={3}; ConnectionLifeTime={4};", serverAddress, userId, pwd, database, 5);
-                MySqlConnection con = new MySqlConnection(ConnectionString);
-                con.Open();
-                Console.WriteLine("Connected to " + serverAddress + " database successfully");
-                con.Close();
+                ConnectionString = String.Format("server={0}; uid={1}; pwd={2}; database={3}; ConnectionLifeTime={4}; maxpoolsize=1500;", serverAddress, userId, pwd, database, 5);
+                using (MySqlConnection con = new MySqlConnection(ConnectionString)) {
+                    con.Open();
+                    Console.WriteLine("Connected to " + serverAddress + " database successfully");
+                    con.Close();
+                }
             }
             catch (Exception ex) {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -62,23 +74,26 @@ namespace FattyBot {
         }
 
         public int GetChannelID(string channel, string server) {
-            MySqlParameter[] sqlParams = {new MySqlParameter("@channel", channel), new MySqlParameter("@server", server)};
-            var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectChannel, sqlParams);
-            if (reader.Read()) {
-                int cID = reader.GetInt32("channel_id");
-                reader.Close();
-                return cID;
-            }
-            else {
-                MySqlHelper.ExecuteNonQuery(ConnectionString, QueryInsertChannel, sqlParams);
-                reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectChannel, sqlParams);
+            MySqlParameter[] sqlParams = { new MySqlParameter("@channel", channel), new MySqlParameter("@server", server) };
+            using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectChannel, sqlParams)) {
                 if (reader.Read()) {
                     int cID = reader.GetInt32("channel_id");
                     reader.Close();
                     return cID;
                 }
             }
-            throw new Exception("failed to get channel ID from database");  
+
+            {
+                MySqlHelper.ExecuteNonQuery(ConnectionString, QueryInsertChannel, sqlParams);
+                using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectChannel, sqlParams)) {
+                    if (reader.Read()) {
+                        int cID = reader.GetInt32("channel_id");
+                        reader.Close();
+                        return cID;
+                    }
+                }
+            }
+            throw new Exception("failed to get channel ID from database");
         }
 
         public void SetChannelLog(string nick, string channel, string server, string message) {
@@ -93,15 +108,16 @@ namespace FattyBot {
             int userID = GetUserID(nick, false);
             int channelID = GetChannelID(channel, server);
             MySqlParameter[] sqlParams = { new MySqlParameter("@user_id", userID), new MySqlParameter("@channel_id", channelID) };
-            var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectRecentChannelLogForUser, sqlParams);
-            if (reader.Read()) {
-                string logMessage = reader.GetString("channel_log_message");
-                string channelName = reader.GetString("channel_name");
-                DateTime messageTime = reader.GetDateTime("channel_log_time");
-                return new Tuple<string, string, DateTime>(logMessage, channelName, messageTime);
+            using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectRecentChannelLogForUser, sqlParams)) {
+                if (reader.Read()) {
+                    string logMessage = reader.GetString("channel_log_message");
+                    string channelName = reader.GetString("channel_name");
+                    DateTime messageTime = reader.GetDateTime("channel_log_time");
+                    return new Tuple<string, string, DateTime>(logMessage, channelName, messageTime);
+                }
             }
-            else
-                return null;
+
+            return null;
         }
 
         public void SetTell(string nick, string message, string recip) {
@@ -117,28 +133,32 @@ namespace FattyBot {
         public bool GetTells(string nick, out List<Tuple<string, DateTime, string>> tells) {
             int userID = GetUserID(nick);
             MySqlParameter[] sqlParams = { new MySqlParameter("@recip_id", userID) };
-            var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectTell, sqlParams);
-            tells = new List<Tuple<string, DateTime, string>>();
-            while (reader.Read()) {
-                int tellID = reader.GetInt32("tell_id");
-                string senderNick = reader.GetString("user_nick");
-                DateTime tellTime = reader.GetDateTime("tell_time");
-                string tellMessage = reader.GetString("tell_message");
-                Tuple<string, DateTime, string> messageGroup = new Tuple<string, DateTime, string>(senderNick, tellTime, tellMessage);
-                tells.Add(messageGroup);
-                MySqlParameter[] sqlDeleteParams = { new MySqlParameter("@tell_id", tellID) };
-                MySqlHelper.ExecuteNonQuery(ConnectionString, QueryRemoveTell, sqlDeleteParams);
-            }
-
+            using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectTell, sqlParams)) {
+                tells = new List<Tuple<string, DateTime, string>>();
+                while (reader.Read()) {
+                    int tellID = reader.GetInt32("tell_id");
+                    string senderNick = reader.GetString("user_nick");
+                    DateTime tellTime = reader.GetDateTime("tell_time");
+                    string tellMessage = reader.GetString("tell_message");
+                    Tuple<string, DateTime, string> messageGroup = new Tuple<string, DateTime, string>(senderNick, tellTime, tellMessage);
+                    tells.Add(messageGroup);
+                    MySqlParameter[] sqlDeleteParams = { new MySqlParameter("@tell_id", tellID) };
+                    MySqlHelper.ExecuteNonQuery(ConnectionString, QueryRemoveTell, sqlDeleteParams);
+                }
+                reader.Close();
+            }           
             return tells.Count > 0 ? true : false;
         }
 
         public bool CheckForTells(string nick) {
             int userID = GetUserID(nick);
             MySqlParameter[] sqlParams = { new MySqlParameter("@recip_id", userID) };
-            var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectTell, sqlParams);
-            if(reader.Read())
-                return true;
+            using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectTell, sqlParams)) {
+                if (reader.Read()) {
+                    reader.Close();
+                    return true;
+                }
+            }
             return false;
         }
     }
