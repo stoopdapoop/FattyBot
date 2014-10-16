@@ -11,7 +11,7 @@ namespace FattyBot {
         
         private Dictionary<string, Tuple<DateTime, String>> SeenList = new Dictionary<string, Tuple<DateTime, String>>();
         static DateTime TimeOfLastSentMessage = DateTime.Now;
-        private delegate void CommandMethod(CommandInfo chat);
+        private delegate void CommandMethod(CommandInput chat);
 
         static ConfigReader Config;
 
@@ -253,7 +253,7 @@ namespace FattyBot {
                     commandArgs = "";
                 }
 
-                CommandInfo info = new CommandInfo(ircUser, commandArgs, messageSource, commandName, messageSourceType);
+                CommandInput info = new CommandInput(ircUser, commandArgs, messageSource, commandName, messageSourceType);
                 RunCommand(info);
             }
             catch (Exception ex) {
@@ -276,7 +276,7 @@ namespace FattyBot {
             }
         }
 
-        private void RunCommand(CommandInfo info) {
+        private void RunCommand(CommandInput info) {
             Tuple<CommandMethod, string> meth;
 
             bool realCommand = this.Commands.TryGetValue(info.CommandName, out meth);

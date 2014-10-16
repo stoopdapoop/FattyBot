@@ -41,8 +41,7 @@ namespace FattyBot {
                     string defineKey = line.Substring(0, assignPos);
                     string defineValue = line.Substring(assignPos + 1, line.Length - (assignPos + 1));
                     Defines.Add(defineKey, defineValue);
-                }
-                
+                }                
             }
         }
 

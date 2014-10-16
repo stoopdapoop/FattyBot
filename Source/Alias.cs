@@ -15,7 +15,7 @@ namespace FattyBot {
             FattyUserAliases = new UserAliasesRegistry();
         }
 
-        public void Alias(CommandInfo info) {
+        public void Alias(CommandInput info) {
             string args = info.Arguments.Trim();
             var argParts = args.Split(' ');
 

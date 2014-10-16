@@ -52,22 +52,24 @@ namespace FattyBot {
 
         public int GetUserID(string nick, bool addIfMissing = true) {
 
-            var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectUser, new MySqlParameter("@nick", nick));
-            if (reader.Read()) {
-                int uID = reader.GetInt32("user_id");
-                reader.Close();
-                return uID;
-            }
-            else if(addIfMissing) {
-                MySqlHelper.ExecuteNonQuery(ConnectionString, QueryInsertUser, new MySqlParameter("@nick", nick));
-                reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectUser, new MySqlParameter("@nick", nick));
+            bool found = false;
+            using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectUser, new MySqlParameter("@nick", nick))) {
                 if (reader.Read()) {
+                    found = true;
                     int uID = reader.GetInt32("user_id");
                     reader.Close();
                     return uID;
                 }
             }
-            else {
+            if (!found && addIfMissing) {
+                MySqlHelper.ExecuteNonQuery(ConnectionString, QueryInsertUser, new MySqlParameter("@nick", nick));
+                using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectUser, new MySqlParameter("@nick", nick))) {
+                    if (reader.Read()) {
+                        int uID = reader.GetInt32("user_id");
+                        reader.Close();
+                        return uID;
+                    }
+                }
                 return 0;
             }
             throw new Exception("failed to get user ID from database");
@@ -104,7 +106,7 @@ namespace FattyBot {
                 throw new Exception("failed to update channel log");
         }
 
-        public Tuple<string, string, DateTime> GetLastLogMessageFromUser(string nick, string channel, string server) {
+        public Tuple<string, string, DateTime, int> GetLastLogMessageFromUser(string nick, string channel, string server) {
             int userID = GetUserID(nick, false);
             int channelID = GetChannelID(channel, server);
             MySqlParameter[] sqlParams = { new MySqlParameter("@user_id", userID), new MySqlParameter("@channel_id", channelID) };
@@ -113,7 +115,7 @@ namespace FattyBot {
                     string logMessage = reader.GetString("channel_log_message");
                     string channelName = reader.GetString("channel_name");
                     DateTime messageTime = reader.GetDateTime("channel_log_time");
-                    return new Tuple<string, string, DateTime>(logMessage, channelName, messageTime);
+                    return new Tuple<string, string, DateTime, int>(logMessage, channelName, messageTime, userID);
                 }
             }
 

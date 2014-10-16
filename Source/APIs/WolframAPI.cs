@@ -17,7 +17,7 @@ namespace FattyBot {
             MaxCallsPerHour = maxCallsPerHour;
         }
 
-        public void MathLimit(CommandInfo info) {
+        public void MathLimit(CommandInput info) {
             //cull old messages
             TimeSpan anHour = new TimeSpan(1, 0, 0);
             for (int i = RecentMathInvocations.Count - 1; i >= 0; --i) {
@@ -27,7 +27,7 @@ namespace FattyBot {
             FattyBot.SendMessage(info.Source, String.Format("{0} wolfram invocations have been made in the past hour. {1} left.", RecentMathInvocations.Count, 30 - RecentMathInvocations.Count));
         }
 
-        public void Math(CommandInfo info) {
+        public void Math(CommandInput info) {
 
             //cull old messages
             TimeSpan anHour = new TimeSpan(1, 0, 0);

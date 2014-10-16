@@ -22,7 +22,7 @@ namespace FattyBot {
             GoogleInterface = goog;
         }
 
-        public void Dictionary(CommandInfo info) {
+        public void Dictionary(CommandInput info) {
             string searchURL = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/" + info.Arguments + "?key=" + DictionaryKey;
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
             HttpWebResponse searchResponse = searchRequest.GetResponse() as HttpWebResponse;

@@ -22,7 +22,7 @@ namespace FattyBot {
             MaxResultsToDisplay = maxResults;
         }
 
-        public void Calculate(CommandInfo info) {
+        public void Calculate(CommandInput info) {
 
             string args = info.Arguments.Replace("+", "%2B");
             string searchURL = "http://www.stands4.com/services/v2/conv.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
@@ -60,7 +60,7 @@ namespace FattyBot {
                 FattyBot.SendMessage(info.Source, "No results for " + info.Arguments);
         }
 
-        public void Acronym(CommandInfo info) {
+        public void Acronym(CommandInput info) {
             string searchURL = "http://www.stands4.com/services/v2/abbr.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
             searchURL += "&term=" + info.Arguments;
             // this is for exact lookup, so I don't have to display results in an intelligent manner
@@ -103,7 +103,7 @@ namespace FattyBot {
             FattyBot.SendMessage(info.Source, messageAccumulator.ToString());
         }
 
-        public void Quotes(CommandInfo info) {
+        public void Quotes(CommandInput info) {
             string searchURL = "http://www.stands4.com/services/v2/quotes.php?uid=" + Stands4UserID + "&tokenid=" + Stands4TokenID;
             searchURL += "&searchtype=SEARCH&query=" + info.Arguments;
             HttpWebRequest searchRequest = HttpWebRequest.Create(searchURL) as HttpWebRequest;
