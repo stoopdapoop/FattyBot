@@ -40,9 +40,10 @@ namespace FattyBot {
             string[] ircChan = Config.GetValueArray("Channel");
             string ircPassword = FattyBot.Config.GetValue("Password");
             try {
-                FattyBot IrcApp = new FattyBot(ircServer, ircPort, ircUser, ircChan, ircPassword);
-                // Connect to server
+                FattyBot IrcApp = new FattyBot(ircServer, ircPort, ircUser, ircChan, ircPassword); 
+                    // Connect to server
                 FattyBot.IrcObject.Connect();
+                
             }
             catch (Exception e) {
                 Console.WriteLine(e.ToString() + e.StackTrace);
@@ -88,7 +89,7 @@ namespace FattyBot {
             string databaseDatabase = Config.GetValue("DatabaseDatabase");
             this.DatabaseInterface = new DatabaseManager(databaseServerAddress, databaseUserID, databasePassword, databaseDatabase);
 
-            this.AliasInterface = new AliasAPI();
+            this.AliasInterface = new AliasAPI(DatabaseInterface);
             this.FattyTellManager = new TellManager(DatabaseInterface);            
         }
 
@@ -189,27 +190,33 @@ namespace FattyBot {
             string commandName;
             string commandArgs;
             if (separatorPosition > -1) {
-                commandName = command.Substring(0, separatorPosition);
+                commandName = command.Substring(0, separatorPosition).ToLower();
                 commandArgs = command.Substring(separatorPosition + 1);
             }
             else {
-                commandName = command;
+                commandName = command.ToLower();
                 commandArgs = "";
             }
-            if (commandName == "say") {
-                int spacePos = commandArgs.IndexOf(" ");
-                spacePos = Math.Max(0, spacePos);
-                string channel = commandArgs.Substring(0, spacePos);
-                string sayMessage = commandArgs.Substring(spacePos + 1, commandArgs.Length - (spacePos + 1));
-                SendMessage(channel, sayMessage);
-            }
-            else if (commandName == "join") {
-                SendNotice(ircUser, "See you there");
-                IrcObject.JoinChannel(commandArgs);
-            }
-            else if (commandName == "leave") {
-                SendMessage(commandArgs, "peacin'");
-                IrcObject.LeaveChannel(commandArgs);
+            switch (commandName) {
+                case "say":
+                    int spacePos = commandArgs.IndexOf(" ");
+                    spacePos = Math.Max(0, spacePos);
+                    string channel = commandArgs.Substring(0, spacePos);
+                    string sayMessage = commandArgs.Substring(spacePos + 1, commandArgs.Length - (spacePos + 1));
+                    SendMessage(channel, sayMessage);
+                    break;
+                case "join":
+                    SendNotice(ircUser, "See you there");
+                    IrcObject.JoinChannel(commandArgs);
+                    break;
+                case "leave":
+                    SendMessage(commandArgs, "peacin'");
+                    IrcObject.LeaveChannel(commandArgs);
+                    break;
+                case "quit":
+                    IrcObject.Quit(commandArgs);
+                    Environment.Exit(0);
+                    break;
             }
         }
 

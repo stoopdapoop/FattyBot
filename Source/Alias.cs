@@ -9,10 +9,12 @@ namespace FattyBot {
     public class AliasAPI
     {
         public UserAliasesRegistry FattyUserAliases;
+        private DatabaseManager DatabaseInterface;
 
-        public AliasAPI()
+        public AliasAPI(DatabaseManager db)
         {
             FattyUserAliases = new UserAliasesRegistry();
+            DatabaseInterface = db;
         }
 
         public void Alias(CommandInput info) {
@@ -24,17 +26,23 @@ namespace FattyBot {
             else if (argParts.Length == 1)
                 DisplayUserAliases(argParts[0], info.Source, args);
             else
-                FattyBot.SendMessage(info.Source, "Not the right number of inputs");
+                FattyBot.SendMessage(info.Source, "Format is .alias [add|remove] <existing_nick> <new_alias> to add or remove a nick, or just .alias <nick> to view aliases for that user");
         }
 
         private void DisplayUserAliases(string alias, string source, string args) {
             StringBuilder sb = new StringBuilder();
-            UserAliasGroup ag;
-            if (FattyUserAliases.GetAliasGroup(alias, out ag)) {
-                var names = ag.GetUserAliases();
-                foreach (string name in names) {
-                    sb.Append(name + " ");
+            var results = DatabaseInterface.GetAliases(alias);
+            string prepend = "Results for " + alias + ": ";
+            int prependLength = prepend.Length;
+            foreach(string res in results)
+            {
+                bool success = FattyBot.TryAppend(sb, res + ", ", source);
+                if (!success) {
+                    sb.Remove(sb.Length - 1, 1);
+                    break;
                 }
+            }
+            if (results.Count > 0) {
                 FattyBot.SendMessage(source, sb.ToString());
             }
             else {

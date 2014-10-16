@@ -6,32 +6,28 @@ using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 namespace FattyBot {
-    class DatabaseManager {
+    public class DatabaseManager {
 
         private readonly string QueryInsertUser = "INSERT INTO users (user_nick) VALUES (@nick)";
         private readonly string QuerySelectUser = "SELECT user_id FROM users WHERE user_nick = @nick";
+
         private readonly string QueryInsertChannel = "INSERT INTO channels (channel_server, channel_name) VALUES (@server, @channel)";
         private readonly string QuerySelectChannel = "SELECT channel_id FROM channels WHERE channel_name = @channel AND channel_server = @server";
+
         private readonly string QueryInsertChannelLog = "INSERT INTO channel_logs (user_id, channel_id, channel_log_message) VALUES (@user, @channel, @message)";
         private readonly string QuerySelectRecentChannelLogForUser = @"SELECT channel_log_message, channel_name, channel_log_time FROM channel_logs natural join 
             channels natural join users where user_id = @user_id AND channel_id = @channel_id ORDER BY channel_log_time DESC LIMIT 1";
+
+        //todo:use this
+        private readonly string QueryUpdateChannelLogForUser = "UPDATE channel_logs SET user_id =@new_id WHERE user_id = @old_id";
+        private readonly string QuerySelectAliasesForUserID = "SELECT user_nick FROM users where user_id = @id";
+
 
         private readonly string QueryInsertTell = "INSERT INTO tells (user_id, user_nick, recipient_id, tell_message) VALUES (@user_id, @user_nick, @recipient_id, @tell_message)";
         private readonly string QuerySelectTell = "SELECT tell_id, user_nick, tell_message, tell_time FROM tells natural join users where recipient_id = @recip_id;";
         private readonly string QueryRemoveTell = "DELETE FROM tells where tell_id = @tell_id;";
 
         private readonly string ConnectionString;
-
-        private class RAIIReader {
-            public MySqlDataReader m_Reader;
-            RAIIReader(MySqlDataReader reader) {
-                m_Reader = reader;
-            }
-
-            ~RAIIReader() {
-                m_Reader.Close();
-            }
-        }
 
         public DatabaseManager(string serverAddress, string userId, string pwd, string database) {
             try {
@@ -50,7 +46,7 @@ namespace FattyBot {
             }
         }
 
-        public int GetUserID(string nick, bool addIfMissing = true) {
+        public int GetUserID(string nick) {
 
             bool found = false;
             using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectUser, new MySqlParameter("@nick", nick))) {
@@ -61,7 +57,7 @@ namespace FattyBot {
                     return uID;
                 }
             }
-            if (!found && addIfMissing) {
+            if (!found) {
                 MySqlHelper.ExecuteNonQuery(ConnectionString, QueryInsertUser, new MySqlParameter("@nick", nick));
                 using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectUser, new MySqlParameter("@nick", nick))) {
                     if (reader.Read()) {
@@ -107,7 +103,7 @@ namespace FattyBot {
         }
 
         public Tuple<string, string, DateTime, int> GetLastLogMessageFromUser(string nick, string channel, string server) {
-            int userID = GetUserID(nick, false);
+            int userID = GetUserID(nick);
             int channelID = GetChannelID(channel, server);
             MySqlParameter[] sqlParams = { new MySqlParameter("@user_id", userID), new MySqlParameter("@channel_id", channelID) };
             using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectRecentChannelLogForUser, sqlParams)) {
@@ -162,6 +158,18 @@ namespace FattyBot {
                 }
             }
             return false;
+        }
+
+        public List<string> GetAliases(string nick) {
+            var nickList = new List<string>();
+            int nickID = GetUserID(nick);
+            MySqlParameter[] sqlParams = { new MySqlParameter("@id", nickID) };
+            using (var reader = MySqlHelper.ExecuteReader(ConnectionString, QuerySelectAliasesForUserID, sqlParams)) {
+                while (reader.Read()) {
+                    nickList.Add(reader.GetString(0));
+                }
+            }
+            return nickList;
         }
     }
 }

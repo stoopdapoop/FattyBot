@@ -101,6 +101,10 @@ namespace FattyBot {
             this.ChannelList.Remove(channelName);
             SendServerMessage(String.Format("PART {0}", channelName));
         }
+
+        public void Quit(string message) {
+            SendServerMessage(String.Format("QUIT :{0}", message));
+        }
         #endregion
 
         #region Private Methods
