@@ -33,7 +33,7 @@ namespace FattyBot {
                     var callerID = DatabaseInterface.GetUserID(info.Caller);
                     if (callerID == result.Item4) {
                         Random rand = new Random();
-                        SendMessage(info.Source,String.Format("I see you right now, {0} :]", cuteName[rand.Next(cuteName.Length)]));
+                        SendMessage(info.Source,String.Format("I see you babby, {0} :]", cuteName[rand.Next(cuteName.Length)]));
                     }
                     else {
                         TimeSpan lastSeenSpan = DateTime.Now - result.Item3;

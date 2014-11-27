@@ -21,6 +21,9 @@ namespace FattyBot {
         private Stands4Api Stands4Interface;
         private WolframAPI WolframInterface;
         private DatabaseManager DatabaseInterface;
+        private BitBucketAPI BitBucketInterface;
+
+        private Timer BitBuckerTimer;
 
         private static TimeSpan FiveMins = new TimeSpan(0, 5, 0);
         bool IsGagged { 
@@ -88,6 +91,14 @@ namespace FattyBot {
             string databasePassword = Config.GetValue("DatabasePassword");
             string databaseDatabase = Config.GetValue("DatabaseDatabase");
             this.DatabaseInterface = new DatabaseManager(databaseServerAddress, databaseUserID, databasePassword, databaseDatabase);
+
+            FattyBot.Config.AddConfig("BitBucket.cfg");
+            string[] bitBucketSubscriptions = FattyBot.Config.GetValueArray("BitBucketEvents");
+            string bitBucketLogin = Config.GetValue("BitBucketLogin");
+            string bitBucketPassword = Config.GetValue("BitBucketPassword");
+            BitBucketInterface = new BitBucketAPI(bitBucketSubscriptions, bitBucketLogin, bitBucketPassword);
+
+            BitBuckerTimer = new Timer(BitBucketInterface.CheckRepos, null, 1000*10, 1000 * 60);
 
             this.AliasInterface = new AliasAPI(DatabaseInterface);
             this.FattyTellManager = new TellManager(DatabaseInterface);            
@@ -244,7 +255,7 @@ namespace FattyBot {
                 return;
 
             try {
-                if (message[0] != CommandSymbol)
+                if (message[0] != CommandSymbol || messageSource == "#hanayuka")
                     return;
 
                 string command = message.Substring(1);
@@ -300,6 +311,7 @@ namespace FattyBot {
         }
 
         public static void SendMessage(string sendTo, string message) {
+            message = message.Trim('\n', '\r');
             string outputMessage = String.Format("PRIVMSG {0} :{1}\r\n", sendTo, message);
             InternalSend(outputMessage);
             Console.ForegroundColor = ConsoleColor.Red;

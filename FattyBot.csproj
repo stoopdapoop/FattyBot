@@ -150,6 +150,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Source\APIs\BitBucketAPI.cs" />
     <Compile Include="Source\CommandInfo.cs" />
     <Compile Include="Source\ConfigReader.cs" />
     <Compile Include="Source\DatabaseManager.cs" />
