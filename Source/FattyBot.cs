@@ -94,9 +94,10 @@ namespace FattyBot {
 
             FattyBot.Config.AddConfig("BitBucket.cfg");
             string[] bitBucketSubscriptions = FattyBot.Config.GetValueArray("BitBucketEvents");
+            string[] bitBucketRepoAliases = FattyBot.Config.GetValueArray("BitBucketRepoAliases");
             string bitBucketLogin = Config.GetValue("BitBucketLogin");
             string bitBucketPassword = Config.GetValue("BitBucketPassword");
-            BitBucketInterface = new BitBucketAPI(bitBucketSubscriptions, bitBucketLogin, bitBucketPassword);
+            BitBucketInterface = new BitBucketAPI(bitBucketSubscriptions, bitBucketRepoAliases, bitBucketLogin, bitBucketPassword);
 
             BitBuckerTimer = new Timer(BitBucketInterface.CheckRepos, null, 1000*10, 1000 * 60);
 
@@ -121,6 +122,7 @@ namespace FattyBot {
             this.Commands.Add("d", new Tuple<CommandMethod, string>(new CommandMethod(this.MerriamWebsterInterface.Dictionary), "dictionary definitions"));
             this.Commands.Add("shorten", new Tuple<CommandMethod, string>(new CommandMethod(this.GoogleInterface.URLShortener), "Shortens URL"));
             this.Commands.Add("shutup", new Tuple<CommandMethod, string>(new CommandMethod(Shutup), "Gags me for 5 minutes"));
+            this.Commands.Add("repo", new Tuple<CommandMethod, string>(new CommandMethod(this.BitBucketInterface.RepoLink), "Returns links to every repo being tracked in this channel"));
         }
 
         private void AssignEvents() {
@@ -255,7 +257,7 @@ namespace FattyBot {
                 return;
 
             try {
-                if (message[0] != CommandSymbol || messageSource == "#hanayuka")
+                if (messageSource != "#hanayuka" && message[0] != CommandSymbol || messageSource == "#hanayuka" && message[0] != ';')
                     return;
 
                 string command = message.Substring(1);

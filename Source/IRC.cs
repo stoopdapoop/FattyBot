@@ -269,7 +269,8 @@ namespace FattyBot {
             // Authenticate our user
             string isInvisible = this.IsInvisble ? "8" : "0";
             Console.WriteLine("Sending user info...");
-            SendServerMessage(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));          
+            SendServerMessage(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));
+            Thread.Sleep(100);
             SendServerMessage(String.Format("NICK {0}", this.IrcNick));
             
             Thread.Sleep(1000);
@@ -300,12 +301,14 @@ namespace FattyBot {
                 case "433":
                     // this is the message we get when nick is already taken
                     Random rand = new Random();
-                    //this.IrcNick += rand.Next(9999);
                     SendServerMessage(String.Format("NICK {0}", this.IrcNick+rand.Next(9999)));
+                    Thread.Sleep(100);
                     SendServerMessage(String.Format("PRIVMSG NickServ :ghost {0} {1}", this.IrcNick, this.AuthPassword));
-                    Thread.Sleep(1000);
+                    Thread.Sleep(2000);
                     SendServerMessage(String.Format("NICK {0}", this.IrcNick));
+                    Thread.Sleep(100);
                     SendServerMessage("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
+                    Thread.Sleep(100);
                     JoinChannels();
                     break;
                 default: this.IrcServerMessage(commandParts); break;
