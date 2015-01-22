@@ -130,7 +130,7 @@ namespace FattyBot
                     string wholeMessage = reader.ReadToEnd();
 
                     Result res = JsonConvert.DeserializeObject<Result>(wholeMessage);
-                    if (res.values[0] == null)
+                    if (res.values.Length == 0)
                         return;
 
                     if (mostRecentValue == null)
