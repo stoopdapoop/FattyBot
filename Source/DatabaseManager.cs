@@ -41,7 +41,7 @@ namespace FattyBot {
             catch (Exception ex) {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("!!!!!!!!!!!!!FAILED TO SET UP DATABASE!!!!!!!!!!!!!");
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message + ": " + ex.TargetSite);
                 Console.ResetColor();
             }
         }

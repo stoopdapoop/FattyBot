@@ -65,7 +65,7 @@ namespace FattyBot {
         public IRC(string ircNick, string ircServer, string[] ircChannels, int ircPort, string authPassword) {
             this.IrcNick = ircNick;
             this.IrcUserName = ircNick;
-            this.IrcRealName = "FattyBot v1.0";
+            this.IrcRealName = "FattyBot v1.1";
             this.IsInvisble = false;
             this.IrcServer = ircServer;
             this.IrcPort = ircPort;
@@ -245,11 +245,11 @@ namespace FattyBot {
                 }
             }
             catch (IOException ex) {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message + ": " + ex.TargetSite);
                 InternalConnect();
             }
             catch (Exception ex) {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message + ": " + ex.TargetSite);
                 InternalConnect();
             }
         }
@@ -270,10 +270,7 @@ namespace FattyBot {
             string isInvisible = this.IsInvisble ? "8" : "0";
             Console.WriteLine("Sending user info...");
             SendServerMessage(String.Format("USER {0} {1} * :{2}", this.IrcUserName, isInvisible, this.IrcRealName));
-            Thread.Sleep(100);
-            SendServerMessage(String.Format("NICK {0}", this.IrcNick));
-            
-            Thread.Sleep(1000);
+            SendServerMessage(String.Format("NICK {0}", this.IrcNick));          
             Console.WriteLine("Identifying...");
             SendServerMessage("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
             
@@ -284,7 +281,7 @@ namespace FattyBot {
 
         private void JoinChannels() {
             foreach (string chan in this.ChannelList) {
-                Thread.Sleep(500);
+                Thread.Sleep(2000);
                 Console.WriteLine("Joining " + chan + "...");
                 SendServerMessage(String.Format("JOIN {0}", chan));             
             }
@@ -302,13 +299,11 @@ namespace FattyBot {
                     // this is the message we get when nick is already taken
                     Random rand = new Random();
                     SendServerMessage(String.Format("NICK {0}", this.IrcNick+rand.Next(9999)));
-                    Thread.Sleep(100);
                     SendServerMessage(String.Format("PRIVMSG NickServ :ghost {0} {1}", this.IrcNick, this.AuthPassword));
-                    Thread.Sleep(2000);
+                    Thread.Sleep(1000);
                     SendServerMessage(String.Format("NICK {0}", this.IrcNick));
-                    Thread.Sleep(100);
                     SendServerMessage("PRIVMSG NickServ :IDENTIFY " + this.AuthPassword);
-                    Thread.Sleep(100);
+                    Thread.Sleep(5000);
                     JoinChannels();
                     break;
                 default: this.IrcServerMessage(commandParts); break;

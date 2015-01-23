@@ -12,9 +12,9 @@ namespace FattyBot
 {
     class BitBucketAPI
     {
-        List<Tuple<string,string,string>> Subscriptions;
+        List<Tuple<string,string,string,DateTime?>> Subscriptions;
         List<Tuple<string, string, string>> Aliases;
-        Value mostRecentValue = null;
+        //Value mostRecentValue = null;
         string AuthLogin;
         string AuthPassword;
 
@@ -41,10 +41,10 @@ namespace FattyBot
         }
 
         public BitBucketAPI(string[] subscriptionString, string[] bitBucketRepoAliases, string authLogin, string authPassword){
-            Subscriptions = new List<Tuple<string, string, string>>();
+            Subscriptions = new List<Tuple<string, string, string,DateTime?>>();
             foreach (string str in subscriptionString) {
                 var strParts = str.Split(' ');
-                Subscriptions.Add(new Tuple<string, string, string>(strParts[0], strParts[1], strParts[2]));
+                Subscriptions.Add(new Tuple<string, string, string,DateTime?>(strParts[0], strParts[1], strParts[2], null));
             }
             Aliases = new List<Tuple<string,string,string>>();
             foreach (string str in bitBucketRepoAliases)
@@ -94,7 +94,7 @@ namespace FattyBot
 
                         Result res = JsonConvert.DeserializeObject<Result>(wholeMessage);
 
-                        if (res.values[0] != null)
+                        if (res.values.Length > 0)
                         {
                             TimeSpan lastCommit = DateTime.Now - res.values[0].date;
                             FattyBot.SendMessage(info.Source, string.Format("last commit was {0} ago. ({1:yyyy-MM-dd HH:mm:ss})", FattyBot.GetPrettyTime(lastCommit), res.values[0].date));
@@ -112,14 +112,14 @@ namespace FattyBot
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message + ": " + ex.TargetSite);
             }
         }
 
         public void CheckRepos(object state) {
             try {
-                foreach (var sub in Subscriptions) {
-                    string requestURL = "https://bitbucket.org/api/2.0/repositories/" + sub.Item2 + "/" + sub.Item3 + "/commits/";
+                for(int j = 0; j < Subscriptions.Count; ++j) {
+                    string requestURL = "https://bitbucket.org/api/2.0/repositories/" + Subscriptions[j].Item2 + "/" + Subscriptions[j].Item3 + "/commits/";
                     HttpWebRequest searchRequest = HttpWebRequest.Create(requestURL) as HttpWebRequest;
                     string authInfo = String.Format("{0}:{1}", AuthLogin, AuthPassword);
                     authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
@@ -133,24 +133,25 @@ namespace FattyBot
                     if (res.values.Length == 0)
                         return;
 
-                    if (mostRecentValue == null)
-                        mostRecentValue = res.values[0];
+                    if (Subscriptions[j].Item4 == null)
+                        Subscriptions[j] = new Tuple<string, string, string, DateTime?>(Subscriptions[j].Item1, Subscriptions[j].Item2, Subscriptions[j].Item3, res.values[0].date);
 
-                    if (mostRecentValue.date < res.values[0].date) {
+                    if (Subscriptions[j].Item4 < res.values[0].date)
+                    {
                         int i = 0;
-                        FattyBot.SendMessage(sub.Item1, String.Format("Commit by {0}:", res.values[i].author.user.UserName));
-                        while (res.values[i].date > mostRecentValue.date) {
-                            FattyBot.SendMessage(sub.Item1, String.Format("- {0}", res.values[i].message));
+                        FattyBot.SendMessage(Subscriptions[j].Item1, String.Format("Commit by {0}:", res.values[i].author.user.UserName));
+                        while (res.values[i].date > Subscriptions[j].Item4 && i < res.values.Length)
+                        {
+                            FattyBot.SendMessage(Subscriptions[j].Item1, String.Format("- {0}", res.values[i].message));
                             ++i;
                         }
-                        FattyBot.SendMessage(sub.Item1, String.Format("https://bitbucket.org/{0}/{1}/commits/all", sub.Item2, sub.Item3));
-                        mostRecentValue = res.values[0];
+                        FattyBot.SendMessage(Subscriptions[j].Item1, String.Format("https://bitbucket.org/{0}/{1}/commits/all", Subscriptions[j].Item2, Subscriptions[j].Item3));
+                        Subscriptions[j] = new Tuple<string, string, string, DateTime?>(Subscriptions[j].Item1, Subscriptions[j].Item2, Subscriptions[j].Item3, res.values[0].date);
                     }
                 }
             } catch (Exception ex){
-                Console.WriteLine(ex.Message);
-            }
-            
+                Console.WriteLine(ex.Message + ": " + ex.TargetSite);
+            }    
         }
     }
 }

@@ -99,7 +99,7 @@ namespace FattyBot {
             string bitBucketPassword = Config.GetValue("BitBucketPassword");
             BitBucketInterface = new BitBucketAPI(bitBucketSubscriptions, bitBucketRepoAliases, bitBucketLogin, bitBucketPassword);
 
-            BitBuckerTimer = new Timer(BitBucketInterface.CheckRepos, null, 1000*10, 1000 * 60);
+            BitBuckerTimer = new Timer(BitBucketInterface.CheckRepos, null, 1000*30, 1000 * 60);
 
             this.AliasInterface = new AliasAPI(DatabaseInterface);
             this.FattyTellManager = new TellManager(DatabaseInterface);            
@@ -277,7 +277,7 @@ namespace FattyBot {
                 RunCommand(info);
             }
             catch (Exception ex) {
-                SendMessage(messageSource, ex.ToString() + "with command: " + message);
+                SendMessage(messageSource, ex.ToString() + "with command: " + message + ": " + ex.TargetSite);
             }
         }
 
