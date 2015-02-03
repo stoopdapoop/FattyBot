@@ -139,7 +139,7 @@ namespace FattyBot
                     if (Subscriptions[j].Item4 < res.values[0].date)
                     {
                         int i = 0;
-                        FattyBot.SendMessage(Subscriptions[j].Item1, String.Format("Commit by {0}:", res.values[i].author.user.UserName));
+                        FattyBot.SendMessage(Subscriptions[j].Item1, String.Format("Commit by {0} on {1}:", res.values[i].author.user.UserName, Subscriptions[j].Item3));
                         while (res.values[i].date > Subscriptions[j].Item4 && i < res.values.Length)
                         {
                             FattyBot.SendMessage(Subscriptions[j].Item1, String.Format("- {0}", res.values[i].message));
